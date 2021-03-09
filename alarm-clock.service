@@ -1,0 +1,15 @@
+[Unit]
+Description=Alarm Clock
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/python /opt/alarm-clock/alarm-clock.py
+WorkingDirectory=/opt/alarm-clock
+StandardOutput=syslog
+StandardError=syslog
+Restart=always
+User=root
+PIDFile=/tmp/alarm-clock.pid
+
+[Install]
+WantedBy=multi-user.target

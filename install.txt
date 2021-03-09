@@ -1,0 +1,23 @@
+apt-get install git
+cd /opt/
+git clone https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
+
+git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
+
+git clone https://github.com/BLavery/lib_oled96
+
+apt-get install build-essential 
+apt-get install python-smbus python-dev python-pip python-pycurl python-pil python-rpi.gpio python3-pygame python-dateutil
+apt-get install i2c-tools
+
+apt-get install libavcodec-extra-56
+apt-get install libav-tools
+apt-get install alsa-utils pulseaudio mpg123
+
+cp alarm-clock.sh /etc/init.d/alarm-clock.sh
+chmod +x /etc/init.d/alarm-clock.sh
+chmod 755 /etc/init.d/alarm-clock.sh
+
+pip install --upgrade google-api-python-client
+pip install --upgrade python-crontab 
+
