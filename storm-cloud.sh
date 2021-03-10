@@ -1,19 +1,19 @@
 #!/bin/sh
 
 ### BEGIN INIT INFO
-# Provides:          alarm-clock
+# Provides:          storm-cloud
 # Required-Start:    $remote_fs $syslog
 # Required-Stop:     $remote_fs $syslog
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: alarm-clock
-# Description:       alarm-clock
+# Short-Description: storm-cloud
+# Description:       storm-cloud
 ### END INIT INFO
 
 # Change the next 3 lines to suit where you install your script and what you want to call it
-DIR=/opt/alarm-clock
+DIR=/opt/storm-cloud
 DAEMON=$DIR/main.py
-DAEMON_NAME=alarm-clock
+DAEMON_NAME=storm-cloud
 
 # Add any command line options for your daemon here
 DAEMON_OPTS=""

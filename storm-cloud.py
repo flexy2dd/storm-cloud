@@ -7,33 +7,35 @@ import re
 import signal
 import argparse
 import time
-import ConfigParser
+#import ConfigParser
 import pprint
 import datetime
 import logging
 import logging.handlers
 
+from luma.core.render import canvas
 from threading import Timer
 
 from modules import network
 from modules import menu
 from modules import screen
+from modules import rotary
 from modules import constant
-from modules import alarm
-from modules import ambiance
+#from modules import alarm
+#from modules import ambiance
 
 import RPi.GPIO as GPIO
 
 from PIL import ImageFont, ImageDraw, Image
 
 #from thirdparties.adafruit.Adafruit_7Segment import SevenSegment
-from thirdparties.lib_oled96.lib_oled96 import ssd1306
-from smbus import SMBus
+#from thirdparties.lib_oled96.lib_oled96 import ssd1306
+#from smbus import SMBus
 
 # ===========================================================================
 # Logging
 # ===========================================================================
-LOG_FILENAME = "/tmp/alarm-clock.log"
+LOG_FILENAME = "/tmp/storm-cloud.log"
 LOG_LEVEL = logging.INFO  # Could be e.g. "DEBUG" or "WARNING"
 
 parser = argparse.ArgumentParser(description="Alarm-clock service")
@@ -73,6 +75,8 @@ def signal_handler(signal, frame):
 
 signal.signal(signal.SIGINT, signal_handler)
 
+signalLevel = 0
+
 # ===========================================================================
 # Menu definition
 # ===========================================================================
@@ -99,15 +103,18 @@ menu_data = {
 }
 
 # ===========================================================================
-# Clock 
-# ===========================================================================
-#if args.segments:
-#  clockSegment = SevenSegment(address=0x70)
-
-# ===========================================================================
 # Alarm
 # ===========================================================================
-oAlarm = alarm.alarm()
+#oAlarm = alarm.alarm()
+
+# ===========================================================================
+# Rotary encoder
+# ===========================================================================
+oRotary = rotary.rotary(
+  21, #CLK
+  20, #DT
+  16  #SW
+)
 
 # ===========================================================================
 # Screen
@@ -118,11 +125,11 @@ oScreen = screen.screen()
 # Button
 # ===========================================================================
 #GPIO.setmode(GPIO.BCM)
-GPIO.setmode(GPIO.BOARD)
-GPIO.setup(constant.GPIO_KEY_MENU, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(constant.GPIO_KEY_UP, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(constant.GPIO_KEY_DOWN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-GPIO.setup(constant.GPIO_KEY_SNOOZE, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setmode(GPIO.BOARD)
+#GPIO.setup(constant.GPIO_KEY_MENU, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(constant.GPIO_KEY_UP, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(constant.GPIO_KEY_DOWN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#GPIO.setup(constant.GPIO_KEY_SNOOZE, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 def clock():
     tClock = Timer(1.0, clock)
@@ -146,40 +153,40 @@ def clock():
     # Wait a quarter second (less than 1 second to prevent colon blinking getting in phase with odd/even seconds).
     time.sleep(0.10)
 
+oScreen.cls()
 oScreen.debug('init clock')
 
-#if args.segments:
-#  clock()
-
-oScreen.debug("ip: %s" % network.get_lan_ip())
-
-oScreen.sleep(5.0)
+oScreen.sleep(2.0)
 
 # Continually update the time
 while(True):
   try:
-    if not (GPIO.input(constant.GPIO_KEY_MENU)):
-      oScreen.cls()
-      menu.processmenu(oScreen, menu_data)
-      oScreen.cls()
 
-    # check alarms
-    oAlarm.check(oScreen) 
+#    if not (GPIO.input(constant.GPIO_KEY_MENU)):
+#      oScreen.cls()
+#      menu.processmenu(oScreen, menu_data)
+#      oScreen.cls()
+
+#    # check alarms
+#    oAlarm.check(oScreen) 
     
     # clear screen
-    oScreen.cls()
+    #oScreen.cls()
     
-    # add alarm status on screen
-    oAlarm.status(oScreen) 
+#    # add alarm status on screen
+#    oAlarm.status(oScreen) 
     
-    # add clock on screen
-    oScreen.clock()
+#    # add clock on screen
+#    oScreen.clock()
     
     # add wifi level signal on screen
-    oScreen.signalLevel(network.get_wifi_signal())
-    
-    # refresh screen
-    oScreen.display()
+    newSignalLevel = network.get_wifi_signal()
+    if signalLevel != newSignalLevel:
+      signalLevel = newSignalLevel
+      oScreen.signalLevel(signalLevel)
+
+#    # refresh screen
+#    oScreen.display()
     
     time.sleep(0.10)
   except:
