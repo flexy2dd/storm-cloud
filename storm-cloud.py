@@ -12,6 +12,7 @@ import pprint
 import datetime
 import logging
 import logging.handlers
+import threading
 
 from luma.core.render import canvas
 from threading import Timer
@@ -108,15 +109,6 @@ menu_data = {
 #oAlarm = alarm.alarm()
 
 # ===========================================================================
-# Rotary encoder
-# ===========================================================================
-oRotary = rotary.rotary(
-  21, #CLK
-  20, #DT
-  16  #SW
-)
-
-# ===========================================================================
 # Screen
 # ===========================================================================
 oScreen = screen.screen()
@@ -157,6 +149,22 @@ oScreen.cls()
 oScreen.debug('init clock')
 
 oScreen.sleep(2.0)
+
+# ===========================================================================
+# Rotary encoder
+# ===========================================================================
+def rotaryEvent(position):
+  print('Hello world! The position is {}' . format(position))
+
+oRotary = rotary.rotary(
+  CLK=21,
+  DT=20,
+  SW=16
+)
+
+oRotary.setup(scale_min=0, scale_max=100, step=1, chg_callback=rotaryEvent)
+menuThread = threading.Thread(target=oRotary.watch)
+menuThread.start()
 
 # Continually update the time
 while(True):
