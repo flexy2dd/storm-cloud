@@ -11,7 +11,7 @@ import pygame
 import pprint
 import RPi.GPIO as GPIO
 from modules import constant
-#import ConfigParser
+import configparser
 
 # ===========================================================================
 # ambiance Class

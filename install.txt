@@ -1,22 +1,20 @@
 apt-get install git
+
 cd /opt/
+
 git clone https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
-
 git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
-
 git clone https://github.com/BLavery/lib_oled96
-
-apt-get install build-essential nodejs npm 
-apt-get install build-essential python3-pip python3-pygame python3-dev python3-rpi.gpio python3-pil python-smbuspython-pycurl  python-dateutil i2c-tools
-
-apt-get install libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff5 -y
-pip3 install luma.oled
-
 pip3 install adafruit-circuitpython-ssd1306
 
-apt-get install libavcodec-extra-56
-apt-get install libav-tools
-apt-get install alsa-utils pulseaudio mpg123
+
+apt-get install nodejs npm 
+
+apt-get install build-essential python3-pip python3-pygame python3-dev python3-rpi.gpio python3-pil python-smbuspython-pycurl  python-dateutil i2c-tools libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff5
+pip3 install luma.oled configparser python-dateutil
+
+apt-get install libavcodec-extra-56 libav-tools alsa-utils pulseaudio mpg123
+
 
 cp alarm-clock.sh /etc/init.d/storm-cloud.sh
 chmod +x /etc/init.d/storm-cloud.sh

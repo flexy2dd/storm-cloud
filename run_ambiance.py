@@ -8,7 +8,7 @@ import re
 import random
 import pygame
 import time
-import ConfigParser
+import configparser
 import pprint
 import datetime
 
@@ -65,13 +65,12 @@ def main(argv):
   debug('Volume:' + str(ambianceVolume))
 
   pidFile = ambiancePid
-  pid = ConfigParser.ConfigParser()
+  pid = configparser.ConfigParser()
   pid.add_section('general')
-  pid.set('general', 'duration', str(ambianceDuration))
-  pid.set('general', 'limit', unixTime)
-  pid.set('general', 'volume', ambianceVolume)
-
-  with open(pidFile, 'wb') as configfile:
+  pid['general']['duration'] = str(ambianceDuration)
+  pid['general']['limit'] = str(unixTime)
+  pid['general']['volume'] = str(ambianceVolume)
+  with open(ambiancePid, 'w') as configfile:
     pid.write(configfile)
 
 #
@@ -84,7 +83,7 @@ def getAmbiance(name):
   debug('Ambiance ' + name + ' (' + ambianceFile + ')')
 
   if os.path.isfile(ambianceFile):
-    ambiance = ConfigParser.ConfigParser()
+    ambiance = configparser.ConfigParser()
     ambiance.read(ambianceFile)
 
     if ambiance.has_option('general', 'deltaMin'):
@@ -183,7 +182,7 @@ if __name__ == "__main__":
   if not os.path.isfile('ambience.pid'):
     debug('wait ' + str(eventDelta) + ' seconds for next event')
 
-  oAmbiencePid = ConfigParser.ConfigParser()
+  oAmbiencePid = configparser.ConfigParser()
 
   while True:
 

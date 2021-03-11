@@ -1,17 +1,10 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 # ===========================================================================
 # Constants
 # ===========================================================================
-GPIO_KEY_SNOOZE = 23
-GPIO_KEY_DOWN = 22
-GPIO_KEY_UP = 26
-GPIO_KEY_MENU = 24
-
-GPIO_KEY_AMBIANCE = 0
-GPIO_KEY_TIME = 0
-
+GPIO_ROTARY_CLK = 23
+GPIO_ROTARY_DT = 20
+GPIO_ROTARY_SW = 16
+    
 MENU_MENU = "menu"
 MENU_COMMAND = "command"
 MENU_EXIT = "exitmenu"

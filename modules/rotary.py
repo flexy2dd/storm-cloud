@@ -1,115 +1,119 @@
 import RPi.GPIO as GPIO
 import time
-from threading import Timer
-from modules import constant
-from os import getenv
+import math
 from pprint import pprint
+from modules import constant
 
+# Inspired by https://github.com/petervflocke/rotaryencoder_rpi
 class rotary():
   
-  def __init__(self, CLK=None, DT=None, SW=None, polling=1, device=None):
-    self.pinCLK = CLK
-    self.pinDT = DT
-    self.pinSW = SW
+  def __init__(self, **params):
+    
+    self.SWPrev = 1
+    self.last_delta = 0
+    self.r_seq = 0
+    self.steps_per_cycle = 4
+    self.remainder = 0
+    self.cycles = 0
+    self.delta = 0
 
-    pprint(self.pinCLK)
+    self.trigger = True
+
+    self.pinCLK = constant.GPIO_ROTARY_CLK
+    self.pinDT = constant.GPIO_ROTARY_DT
+    self.pinSW = constant.GPIO_ROTARY_SW
 
     GPIO.setmode(GPIO.BCM)
-    GPIO.setup(self.pinCLK, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(self.pinDT, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-    GPIO.setup(self.pinSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     
+    # Rotation
+    GPIO.setup(self.pinCLK, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(self.pinCLK, GPIO.BOTH, callback=self.rotaryCall)
+    
+    GPIO.setup(self.pinDT, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(self.pinDT, GPIO.BOTH, callback=self.rotaryCall)
+    
+    # Switch
+    GPIO.setup(self.pinSW, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    GPIO.add_event_detect(self.pinSW, GPIO.BOTH, callback=self.rotarySwitchCall, bouncetime=50) 
+
     self.lastState = GPIO.input(self.pinCLK)
-    self.polling = polling
-                  
-  def warnFloatDepreciation(self, i):
-    if isinstance(i, float):
-      warnings.warn('Float numbers as `scale_min`, `scale_max`, `sw_debounce_time` or `step` will be deprecated in the next major release. Use integers instead.', DeprecationWarning)
+    
+    self.switchCallback = None
+    self.rotateCallback = None
 
-  def setup(self, **params):
-    if 'loop' in params and params['loop'] is True:
-      self.counter_loop = True
+    if 'switch_callback' in params:
+      self.switchCallback = params['switch_callback']
+
+    if 'rotate_callback' in params:
+      self.rotateCallback = params['rotate_callback']
+
+  def triggerDisable(self):
+    self.trigger = False
+
+  def triggerEnable(self):
+    self.trigger = True
+
+  def triggerRotate(self, status):
+    if not self.rotateCallback is None and self.trigger:
+      self.rotateCallback(status)
+
+  def triggerSwitch(self, status):
+    if not self.switchCallback is None and self.trigger:
+      self.switchCallback(status)
+
+  def rotaryCall(self, channel):
+    delta = 0
+    a_state = GPIO.input(self.pinCLK)
+    b_state = GPIO.input(self.pinDT)
+    r_seq = (a_state ^ b_state) | b_state << 1
+    if r_seq != self.r_seq:
+        delta = (r_seq - self.r_seq) % 4
+        if delta==3:
+            delta = -1
+        elif delta==2:
+            delta = int(math.copysign(delta, self.last_delta))
+        self.last_delta = delta
+        self.r_seq = r_seq
+    self.delta += delta
+    self.remainder += delta 
+    self.cycles = self.remainder // self.steps_per_cycle
+    self.remainder %= self.steps_per_cycle
+
+    # Check rotary status
+    if self.cycles == 1:
+        self.triggerRotate('left')
+        self.delta = 0
+    elif self.cycles == -1:
+        self.triggerRotate('right')
+        self.delta = 0
     else:
-      self.counter_loop = False
+        pass
 
-    if 'scale_min' in params:
-      assert isinstance(params['scale_min'], int) or isinstance(params['scale_min'], float)
-      self.min_counter = params['scale_min']
-      self.counter = self.min_counter
-      self.warnFloatDepreciation(params['scale_min'])
+  def rotarySwitchCall(self, channel):
+    state = GPIO.input(self.pinSW)
+    if state == 0:
+        if self.SWPrev == 1:
+          self.SWPrev = 0
+          self.triggerSwitch('press')
+        else:
+          pass
+    else: 
+        if self.SWPrev == 0:
+          self.SWPrev = 1
+          self.triggerSwitch('release')
+        else:
+          pass
 
-    if 'scale_max' in params:
-      assert isinstance(params['scale_max'], int) or isinstance(params['scale_max'], float)
-      self.max_counter = params['scale_max']
-      self.warnFloatDepreciation(params['scale_max'])
+  def setSwitchCallback(self, switch_callback):
+    self.switchCallback = switch_callback
 
-    if 'step' in params:
-      assert isinstance(params['step'], int) or isinstance(params['step'], float)
-      self.step = params['step']
-      self.warnFloatDepreciation(params['step'])
+  def setRotateCallback(self, rotate_callback):
+    self.rotateCallback = rotate_callback
 
-    if 'chg_callback' in params:
-      assert callable(params['chg_callback'])
-      self.chg_callback = params['chg_callback']
-
-  def _switch_press(self):
-    now = time() * 1000
-    if not self.sw_triggered:
-      if self.latest_switch_press is not None:
-        if now - self.latest_switch_press > self.sw_debounce_time:
-          self.sw_callback()
-      else:
-        self.sw_callback()
-    self.sw_triggered = True
-    self.latest_switch_press = now
-
-  def _switch_release(self):
-    self.sw_triggered = False
-
-  def _clockwise_tick(self):
-    if self.counter + self.step <= self.max_counter:
-      self.counter += self.step
-    elif self.counter + self.step > self.max_counter:
-      self.counter = self.min_counter if self.counter_loop is True else self.max_counter
-
-    if self.inc_callback is not None:
-      self.inc_callback(self.counter)
-    if self.chg_callback is not None:
-      self.chg_callback(self.counter)
-
-  def _counterclockwise_tick(self):
-    if self.counter - self.step >= self.min_counter:
-      self.counter -= self.step
-    elif self.counter - self.step < self.min_counter:
-      self.counter = self.max_counter if self.counter_loop is True else self.min_counter
-
-    if self.inc_callback is not None:
-      self.dec_callback(self.counter)
-    if self.chg_callback is not None:
-      self.chg_callback(self.counter)
-
-  def watch(self):
-    while True:
-      try:
-        if self.sw_callback:
-          if GPIO.input(self.sw) == GPIO.LOW:
-            self._switch_press()
-          else:
-            self._switch_release()
-
-        clkState = GPIO.input(self.pinCLK)
-        dtState = GPIO.input(self.pinDT)
-
-        if clkState != self.clk_last_state:
-          if dtState != clkState:
-            self._clockwise_tick()
-          else:
-            self._counterclockwise_tick()
-
-        self.clk_last_state = clkState
-        sleep(self.polling_interval / 1000)
-
-      except BaseException as e:
-        GPIO.cleanup()
-        break
-    return
+#  # it does not work as expected fix me
+#  def __del__(self):
+#    GPIO.cleanup()
+        
+#  #workaround to close gpio in a proper way, function shall be called at exit 
+#  def Exit(self):
+#    GPIO.cleanup()

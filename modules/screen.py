@@ -58,7 +58,7 @@ class screen():
     self.draw.text((left, top), text, font=self.font, fill=fill)
   
   def setRect(self, left, top, width, height, outline, fill):
-    self.draw.rectangle((10, 10, 30, 30), outline="black", fill="black")
+    self.draw.rectangle((left, top, width, height), outline, fill)
     
   def debug(self, text):
     self.debugLines.append(text)
@@ -104,26 +104,6 @@ class screen():
     font = ImageFont.truetype('%s/../fonts/FreeSans.ttf' % os.path.dirname(__file__), 12)
     self.draw.text((14, 52), sNext, font=font, fill=1)
 
-  def alarmPlay(self): 
-    now = datetime.datetime.now()
-    
-    font = ImageFont.truetype('%s/../fonts/fontawesome-webfont.ttf' % os.path.dirname(__file__), 60)
-    text = codecs.unicode_escape_decode(constant.FONT_AWESOME_ICONS["fa-bell-o"])[0]
-    iState = (now.second % 2)
-    if self.alarmState==iState:
-      return False
-    
-    if (iState == 0):
-      self.cls(1)
-      self.draw.text((36, 2), text, font=font, fill=0)
-      self.alarmState = 0
-    else:
-      self.cls(0)
-      self.draw.text((36, 2), text, font=font, fill=1)
-      self.alarmState = 1
-      
-    self.display()
-    
   def signalLevel(self, level = 0):          
     
     left = 114
