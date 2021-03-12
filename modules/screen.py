@@ -28,6 +28,7 @@ class screen():
     self.image = Image.new(self.device.mode, self.device.size)
     self.draw = ImageDraw.Draw(self.image)
 
+    self.pulseStatus = 1
     self.fontSize = 10
     self.maxScreenLines = 6
     self.width = self.device.width
@@ -124,6 +125,17 @@ class screen():
       self.draw.bitmap((left, top), self.logoWifi0, fill="black")
     self.display()
 
+  def pulse(self):
+    top = self.device.height-4
+    left = self.device.width-4
+    if self.pulseStatus==1:
+      self.draw.rectangle((top, left, self.device.height, self.device.width), outline="white", fill="white")
+      self.pulseStatus=0
+    else:
+      self.draw.rectangle((self.device.height-4, self.device.width-4, self.device.height, self.device.width), outline="black", fill="black")
+      self.pulseStatus=1
+    self.display()
+    
   def sleep(self, secondsWait = 5.0):
     affStart = time.time()
     milliseconds = float(secondsWait)*1000

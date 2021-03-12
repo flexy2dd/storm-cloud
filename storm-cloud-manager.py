@@ -73,13 +73,18 @@ signalLevel = 0
 menu_data = {
   'title': "General", 'type': constant.MENU_MENU,
   'options':[
-#    { 'title': "Reveil", 'type': constant.MENU_COMMAND, 'command': 'setAlarm' },
-#    { 'title': "Ambiance", 'type': constant.MENU_COMMAND, 'command': 'setAmbiance' },
-    { 'title': "Snooze", 'type': constant.MENU_COMMAND, 'command': 'setSnooze' },
+    { 'title': "Snooze", 'type': constant.MENU_MENU,
+      'options': [
+        { 'title': "Lancer", 'type': constant.MENU_COMMAND, 'command': 'setSnooze' },
+        { 'title': "Arreter", 'type': constant.MENU_COMMAND, 'command': 'setStop' },
+      ]
+    },
     { 'title': "Ambiance", 'type': constant.MENU_MENU,
       'options': [
         { 'title': "Pluie", 'type': constant.MENU_COMMAND, 'command': 'setRain' },
         { 'title': "Orage", 'type': constant.MENU_COMMAND, 'command': 'setThunder' },
+        { 'title': "Eclairs", 'type': constant.MENU_COMMAND, 'command': 'setLight' },
+        { 'title': "Volume", 'type': constant.MENU_COMMAND, 'command': 'setVolume' },
       ]
     },
     { 'title': "Parametres", 'type': constant.MENU_MENU,
@@ -121,36 +126,6 @@ oRotary = rotary.rotary(
   rotate_callback=rotaryRotateCall
 )
 
-# ===========================================================================
-# Alarm
-# ===========================================================================
-#oAlarm = alarm.alarm()
-
-# ===========================================================================
-# Clock
-# ===========================================================================
-#def clock():
-#    tClock = Timer(1.0, clock)
-#    tClock.start()
-#    
-#    now = datetime.datetime.now()
-#    hour = now.hour
-#    minute = now.minute
-#    second = now.second
-#
-#    #if args.segments:
-#    #  # Set hours
-#    #  clockSegment.writeDigit(0, int(hour / 10))     # Tens
-#    #  clockSegment.writeDigit(1, hour % 10)          # Ones
-#    #  # Set minutes
-#    #  clockSegment.writeDigit(3, int(minute / 10))   # Tens
-#    #  clockSegment.writeDigit(4, minute % 10)        # Ones
-#    #  # Toggle colon
-#    #  clockSegment.setColon(second % 2)              # Toggle colon at 1Hz
-#
-#    # Wait a quarter second (less than 1 second to prevent colon blinking getting in phase with odd/even seconds).
-#    time.sleep(0.10)
-
 # Continually update 
 while(True):
   try:
@@ -166,28 +141,13 @@ while(True):
       swithRelease = 0
       oScreen.cls()
 
-#    # check alarms
-#    oAlarm.check(oScreen) 
-    
-    # clear screen
-    #oScreen.cls()
-    
-#    # add alarm status on screen
-#    oAlarm.status(oScreen) 
-    
-#    # add clock on screen
-#    oScreen.clock()
-    
     # add wifi level signal on screen
-    newSignalLevel = network.get_wifi_signal()
-    if signalLevel != newSignalLevel:
-      signalLevel = newSignalLevel
-      oScreen.signalLevel(signalLevel)
+    oScreen.pulse()
 
 #    # refresh screen
 #    oScreen.display()
     
-    time.sleep(0.10)
+    time.sleep(0.50)
   except:
 #    print("Unexpected error:", sys.exc_info()[0])
     raise

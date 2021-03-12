@@ -264,13 +264,13 @@ class ambiance():
     ambiance = self.getAmbiance()
     return int(ambiance.get('general', 'rain', fallback=constant.RAIN_LEVEL_NONE))
 
-  def setThunderstorm(self, thunderstorm):
+  def setThunder(self, thunderstorm):
     if os.path.isfile(self.ambianceConf):
       ambiance = configparser.ConfigParser()
       ambiance.read(self.ambianceConf)
 
       if int(thunderstorm) in [constant.THUNDERSTORM_LEVEL_NONE, constant.THUNDERSTORM_LEVEL_LIGHT, constant.THUNDERSTORM_LEVEL_MODERATE, constant.THUNDERSTORM_LEVEL_HEAVY]:
-        ambiance.set('general', 'thunderstorm', str(thunderstorm))
+        ambiance.set('general', 'thunder', str(thunderstorm))
 
         with open(self.ambianceConf, 'w') as configfile:
           ambiance.write(configfile)
@@ -279,16 +279,35 @@ class ambiance():
 
     return False;
 
-  def getThunderstorm(self):
+  def getThunder(self):
     ambiance = self.getAmbiance()
-    return int(ambiance.get('general', 'thunderstorm', fallback=constant.RAIN_LEVEL_NONE))
+    return int(ambiance.get('general', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
+
+  def setLight(self, thunderlight):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      if int(thunderlight) in [constant.THUNDERLIGHT_ON, constant.THUNDERLIGHT_OFF]:
+        ambiance.set('general', 'light', str(thunderlight))
+
+        with open(self.ambianceConf, 'w') as configfile:
+          ambiance.write(configfile)
+
+        return True
+
+    return False;
+
+  def getLight(self):
+    ambiance = self.getAmbiance()
+    return int(ambiance.get('general', 'light', fallback=constant.THUNDERLIGHT_ON))
 
   def setVolume(self, volume):
     if os.path.isfile(self.ambianceConf):
       ambiance = configparser.ConfigParser()
       ambiance.read(self.ambianceConf)
 
-      ambiance.set('general', 'volume', volume)
+      ambiance.set('general', 'volume', str(volume))
     
       with open(self.ambianceConf, 'w') as configfile:
         ambiance.write(configfile)
@@ -299,36 +318,28 @@ class ambiance():
 
   def getVolume(self):
     ambiance=self.getAmbiance()
-    return int(ambiance.get('general', 'volume'))
+    return int(ambiance.get('general', 'volume', fallback='30'))
 
-  def setVolumeScreen(self, oScreen):
-    volume = self.getVolume()
-    oScreen.cls()
-    oScreen.setText(0, 10, "Volume: %s" % volume, 1)
-    oScreen.display()
-    while(True):
-      if not (GPIO.input(constant.GPIO_KEY_UP)): # down arrow
-        if volume <= 99:
-          volume += 1
-      elif not (GPIO.input(constant.GPIO_KEY_DOWN)): # up arrow
-        if volume >= 1:
-          volume -= 1
+  def setSnooze(self, snooze):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
 
-      if not (GPIO.input(constant.GPIO_KEY_MENU)):
-        break
+      ambiance.set('general', 'snooze', str(snooze))
+    
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
 
-      oScreen.cls()
-      oScreen.setText(0, 10, "Volume: %s" % volume, 1)
-      oScreen.display()
-      self.setVolume(volume)
+      return True
 
-      time.sleep(0.05)
-      
-  def setSelectScreen(self, oScreen):
-    volume = self.getVolume()
-    oScreen.cls()
-    oScreen.setText(0, 10, "Volume: %s" % volume, 1)
-    oScreen.display()
-    while(True):
-      if not (GPIO.input(constant.GPIO_KEY_MENU)):
-        break
+    return False;
+
+  def getSnooze(self):
+    ambiance=self.getAmbiance()
+    return int(ambiance.get('general', 'snooze', fallback='30'))
+
+  def play(self):
+    return True
+    
+  def stop(self):
+    return True

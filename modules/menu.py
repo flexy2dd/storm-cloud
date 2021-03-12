@@ -2,6 +2,7 @@ import RPi.GPIO as GPIO
 import time
 import math
 import os
+import pygame
 from PIL import ImageFont, ImageDraw, Image
 from modules import constant
 from modules import network
@@ -12,6 +13,7 @@ class menu():
 
   def __init__(self):
     self.swithRelease = 0
+    self.genericOptionStep = 1
   
   # This function displays the appropriate menu and returns the option selected
   def runmenu(self, screen, rotary, menu, parent):
@@ -82,15 +84,15 @@ class menu():
 
   def rotaryRotateGenericCall(self, direction):
     if direction=='left':
-      if self.genericPos < self.genericOptioncount:
-        self.genericPos += 1
+      if self.genericPos < self.genericOptionMax:
+        self.genericPos += self.genericOptionStep
       else:
-        self.genericPos = self.genericOptioncount
+        self.genericPos = self.genericOptionMax
     elif direction=='right':
-      if self.genericPos > 0:
-        self.genericPos += -1
+      if self.genericPos > self.genericOptionMin:
+        self.genericPos += -self.genericOptionStep
       else:
-        self.genericPos = 0
+        self.genericPos = self.genericOptionMin
 
   def rotaryRotateCall(self, direction):
     if direction=='left':
@@ -129,22 +131,45 @@ class menu():
 
         if menu['options'][getin]['command'] == 'setRain':
           rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.genericOptionStep = 1
           self.swithRelease = 0
           self.setRain(screen)
           rotary.setRotateCallback(self.rotaryRotateCall)
 
         if menu['options'][getin]['command'] == 'setThunder':
           rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.genericOptionStep = 1
           self.swithRelease = 0
           self.setThunder(screen)
           rotary.setRotateCallback(self.rotaryRotateCall)
 
-        if menu['options'][getin]['command'] == 'setAmbiance':
-          self.setAmbiance(screen)
-  
+        if menu['options'][getin]['command'] == 'setLight':
+          rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.genericOptionStep = 1
+          self.swithRelease = 0
+          self.setLight(screen)
+          rotary.setRotateCallback(self.rotaryRotateCall)
+
         if menu['options'][getin]['command'] == 'setVolume':
+          rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.genericOptionStep = 1
+          self.swithRelease = 0
           self.setVolume(screen)
-  
+          rotary.setRotateCallback(self.rotaryRotateCall)
+
+        if menu['options'][getin]['command'] == 'setSnooze':
+          rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.swithRelease = 0
+          self.setSnooze(screen)
+          rotary.setRotateCallback(self.rotaryRotateCall)
+
+        if menu['options'][getin]['command'] == 'setStop':
+          rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.genericOptionStep = 1
+          self.swithRelease = 0
+          self.setStop(screen)
+          rotary.setRotateCallback(self.rotaryRotateCall)
+
         screen.cls()
       elif menu['options'][getin]['type'] == constant.MENU_MENU:
             screen.cls() #clears previous screen on key press and updates display based on pos
@@ -194,6 +219,8 @@ class menu():
       time.sleep(0.10)
 
   def setRain(self, screen):
+    screen.cls()
+    screen.setText(0, 10, "Pluie", 1)
 
     oAmbiance = ambiance.ambiance()
     iRain = oAmbiance.getRain()
@@ -203,14 +230,15 @@ class menu():
     logoRain = Image.open('%s/../icons/rain-%s.png' % (os.path.dirname(__file__), str(iRain)))
     screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
     screen.draw.bitmap((left, top), logoRain, fill="black")
+    screen.display()
 
-    self.genericOptioncount = 4
+    self.genericOptionMax = 3
+    self.genericOptionMin = 0
     self.genericPos = iRain
     self.oldPos = iRain
 
     while(True):
       if self.oldPos != self.genericPos:
-        print('update logo')
         logoRain = Image.open('%s/../icons/rain-%s.png' % (os.path.dirname(__file__), str(self.genericPos)))
         screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
         screen.draw.bitmap((left, top), logoRain, fill="black")
@@ -219,18 +247,163 @@ class menu():
 
       if self.swithRelease==1:
         self.swithRelease = 0
+        oAmbiance.setRain(self.genericPos)
         break
 
       time.sleep(0.10)
 
-  def setStorm(self, screen):
+  def setThunder(self, screen):
+    screen.cls()
+    screen.setText(0, 10, "Tonnerre", 1)
 
-    if self.swithRelease==1:
-      self.swithRelease = 0
-#      break
+    oAmbiance = ambiance.ambiance()
+    iThunder = oAmbiance.getThunder()
 
-    time.sleep(0.10)
+    left = 40
+    top = 22
+    logoThunder = Image.open('%s/../icons/thunder-%s.png' % (os.path.dirname(__file__), str(iThunder)))
+    screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
+    screen.draw.bitmap((left, top), logoThunder, fill="black")
+    screen.display()
+
+    self.genericOptionMax = 3
+    self.genericOptionMin = 0
+    self.genericPos = iThunder
+    self.oldPos = iThunder
+
+    while(True):
+      if self.oldPos != self.genericPos:
+        logoThunder = Image.open('%s/../icons/thunder-%s.png' % (os.path.dirname(__file__), str(self.genericPos)))
+        screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
+        screen.draw.bitmap((left, top), logoThunder, fill="black")
+        self.oldPos = self.genericPos
+        screen.display()
+
+      if self.swithRelease==1:
+        self.swithRelease = 0
+        oAmbiance.setThunder(self.genericPos)
+        break
+
+      time.sleep(0.10)
+
+  def setLight(self, screen):
+    screen.cls()
+    screen.setText(0, 10, "Eclairs", 1)
+    screen.display()
+
+    oAmbiance = ambiance.ambiance()
+    iLight = oAmbiance.getLight()
+
+    left = 40
+    top = 22
+    logoThunder = Image.open('%s/../icons/lightbulb-%s.png' % (os.path.dirname(__file__), str(iLight)))
+    screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
+    screen.draw.bitmap((left, top), logoThunder, fill="black")
+    screen.display()
+
+    self.genericOptionMax = 1
+    self.genericOptionMin = 0
+    self.genericPos = iLight
+    self.oldPos = iLight
+
+    while(True):
+      if self.oldPos != self.genericPos:
+        logoThunder = Image.open('%s/../icons/lightbulb-%s.png' % (os.path.dirname(__file__), str(self.genericPos)))
+        screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
+        screen.draw.bitmap((left, top), logoThunder, fill="black")
+        self.oldPos = self.genericPos
+        screen.display()
+
+      if self.swithRelease==1:
+        self.swithRelease = 0
+        oAmbiance.setLight(self.genericPos)
+        break
+
+      time.sleep(0.10)
 
   def setVolume(self, screen):
+    screen.cls()
+    screen.setText(0, 10, "Volume", 1)
+
     oAmbiance = ambiance.ambiance()
-    oAmbiance.setVolumeScreen(screen)
+    iVolume = oAmbiance.getVolume()
+
+    volume = ((iVolume * 100.0) / 100) / 100    
+    pygame.mixer.init();
+    oTestSound = pygame.mixer.Sound('%s/../sounds/volume.wav' % os.path.dirname(__file__))
+    oTestSound.set_volume(volume)
+    oTestSound.play(1)
+
+    left = 0
+    top = 22
+    font = ImageFont.truetype('%s/../fonts/FreeSans.ttf' % os.path.dirname(__file__), 45)
+    screen.draw.rectangle((left, top, screen.device.width - 1, screen.device.height - 1), outline="black", fill="black")
+    screen.draw.text((left, top), str(iVolume), font=font, fill="white")
+
+    screen.display()
+
+    self.genericOptionMax = 100
+    self.genericOptionMin = 0
+    self.genericPos = iVolume
+    self.oldPos = iVolume
+
+    while(True):
+
+      if self.oldPos != self.genericPos:
+        screen.draw.rectangle((left, top, screen.device.width - 1, screen.device.height - 1), outline="black", fill="black")
+        screen.draw.text((left, top), str(self.genericPos), font=font, fill="white")
+        self.oldPos = self.genericPos
+        screen.display()
+        volume = ((self.genericPos * 100.0) / 100) / 100
+        oTestSound.set_volume(volume)
+
+      if self.swithRelease==1:
+        self.swithRelease = 0
+        oTestSound.stop()
+        oAmbiance.setVolume(self.genericPos)
+        break
+
+      time.sleep(0.10)
+
+  def setStop(self, screen):
+    screen.cls()
+    oAmbiance = ambiance.ambiance()
+    oAmbiance.stop()
+    time.sleep(0.10)
+
+  def setSnooze(self, screen):
+    screen.cls()
+    screen.setText(0, 10, "Temps", 1)
+
+    oAmbiance = ambiance.ambiance()
+    iSnooze = oAmbiance.getSnooze()
+
+    left = 0
+    top = 22
+    font = ImageFont.truetype('%s/../fonts/FreeSans.ttf' % os.path.dirname(__file__), 30)
+    screen.draw.rectangle((left, top, screen.device.width - 1, screen.device.height - 1), outline="black", fill="black")
+    screen.draw.text((left, top), str(iSnooze) + ' min', font=font, fill="white")
+
+    screen.display()
+
+    self.genericOptionMax = 100
+    self.genericOptionMin = 0
+    self.genericOptionStep = 15
+    self.genericPos = iSnooze
+    self.oldPos = iSnooze
+
+    while(True):
+
+      if self.oldPos != self.genericPos:
+        screen.draw.rectangle((left, top, screen.device.width - 1, screen.device.height - 1), outline="black", fill="black")
+        screen.draw.text((left, top), str(self.genericPos) + ' min', font=font, fill="white")
+        self.oldPos = self.genericPos
+        screen.display()
+
+      if self.swithRelease==1:
+        self.swithRelease = 0
+        oAmbiance.setSnooze(self.genericPos)
+        oAmbiance.play()
+        break
+
+      time.sleep(0.10)
