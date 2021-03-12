@@ -116,8 +116,8 @@ class menu():
         if menu['options'][getin]['command'] == 'setAmbiance':
           self.setAmbiance(screen)
   
-        if menu['options'][getin]['command'] == 'setAmbianceVol':
-          self.setAmbianceVol(screen)
+        if menu['options'][getin]['command'] == 'setVolume':
+          self.setVolume(screen)
   
         screen.cls()
       elif menu['options'][getin]['type'] == constant.MENU_MENU:
@@ -132,17 +132,62 @@ class menu():
   def viewInfos(self, screen):
     screen.cls()
     screen.setText(0, 10, "ip: %s" % network.get_lan_ip(), 1)
+
+
+    left = 10
+    top = 15
+    
+    screen.draw.rectangle((left, top, left+30, top+30), outline="white", fill="white")
+
+    level = int(network.get_wifi_signal())
+    level = 0
+    if level>0 and level<=25:
+      screen.draw.bitmap((left, top), screen.logoWifi25, fill="black")
+    elif level>25 and level<=50:
+      screen.draw.bitmap((left, top), screen.logoWifi50, fill="black")
+    elif level>50 and level<=75:
+      screen.draw.bitmap((left, top), screen.logoWifi75, fill="black")
+    elif level>75:
+      screen.draw.bitmap((left, top), screen.logoWifi100, fill="black")
+    else:
+      screen.draw.bitmap((left, top), screen.logoWifi0, fill="black")
+
     screen.display()
+
     while(True):
-      if not (GPIO.input(constant.GPIO_KEY_MENU)):
+      if self.swithRelease==1:
+        self.swithRelease = 0
         break
-  
+
       time.sleep(0.10)
   
-  def setAmbiance(self, screen):
-  	oAmbiance = ambiance.ambiance()
-  	oAmbiance.setSelectScreen(screen)
-  
-  def setAmbianceVol(self, screen):
+  def setSnooze(self, screen):
+
+    if self.swithRelease==1:
+      self.swithRelease = 0
+#      break
+
+      time.sleep(0.10)
+
+  def setRain(self, screen):
+
+    oAmbiance = ambiance.ambiance()
+    oAmbiance.getRain()
+
+    if self.swithRelease==1:
+      self.swithRelease = 0
+#      break
+
+    time.sleep(0.10)
+
+  def setStorm(self, screen):
+
+    if self.swithRelease==1:
+      self.swithRelease = 0
+#      break
+
+    time.sleep(0.10)
+
+  def setVolume(self, screen):
     oAmbiance = ambiance.ambiance()
     oAmbiance.setVolumeScreen(screen)

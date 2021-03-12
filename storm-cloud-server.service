@@ -1,15 +1,15 @@
 [Unit]
-Description=Storm Cloud
+Description=Storm Cloud API server
 After=network.target
 
 [Service]
-ExecStart=/usr/local/bin/python /opt/storm-cloud/storm-cloud.py
+ExecStart=/usr/local/bin/python3 /opt/storm-cloud/storm-cloud-server.py
 WorkingDirectory=/opt/storm-cloud
 StandardOutput=syslog
 StandardError=syslog
 Restart=always
 User=root
-PIDFile=/tmp/storm-cloud.pid
+PIDFile=/tmp/storm-cloud-server.pid
 
 [Install]
 WantedBy=multi-user.target

@@ -1,13 +1,23 @@
 # ===========================================================================
 # Constants
 # ===========================================================================
-GPIO_ROTARY_CLK = 23
+GPIO_ROTARY_CLK = 4
 GPIO_ROTARY_DT = 20
 GPIO_ROTARY_SW = 16
     
 MENU_MENU = "menu"
 MENU_COMMAND = "command"
 MENU_EXIT = "exitmenu"
+
+RAIN_LEVEL_NONE = 0
+RAIN_LEVEL_LIGHT = 1
+RAIN_LEVEL_MODERATE = 2
+RAIN_LEVEL_HEAVY = 3
+
+THUNDERSTORM_LEVEL_NONE = 0
+THUNDERSTORM_LEVEL_LIGHT = 1
+THUNDERSTORM_LEVEL_MODERATE = 2
+THUNDERSTORM_LEVEL_HEAVY = 3
 
 FONT_AWESOME_ICONS = {
   "fa-glass": "\uf000",

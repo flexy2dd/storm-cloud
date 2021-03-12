@@ -1,23 +1,20 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
 # module for getting some information of network
-
 import os
 import socket
 import subprocess
 import sys
 import re
+from pprint import pprint
 
 if os.name != "nt":
   import fcntl
   import struct
   def get_interface_ip(ifname):
-    
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     return socket.inet_ntoa(fcntl.ioctl(
         s.fileno(),
         0x8915,  # SIOCGIFADDR
-        struct.pack('256s', bytes(ifname[:15]))
+        struct.pack('256s', bytes(ifname[:15], encoding='utf8'))
         # Python 2.7: remove the second argument for the bytes call
       )[20:24])
 

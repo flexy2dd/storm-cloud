@@ -24,6 +24,7 @@ class rotary():
     self.pinSW = constant.GPIO_ROTARY_SW
 
     GPIO.setmode(GPIO.BCM)
+    GPIO.setwarnings(False)
     
     # Rotation
     GPIO.setup(self.pinCLK, GPIO.IN, pull_up_down=GPIO.PUD_UP)

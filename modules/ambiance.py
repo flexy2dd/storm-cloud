@@ -30,7 +30,7 @@ class ambiance():
     data = {}
     
     if os.path.isfile(self.ambianceFile):
-      ambiance = ConfigParser.ConfigParser()
+      ambiance = configparser.ConfigParser()
       ambiance.read(self.ambianceFile)
       
       for section in ambiance.sections():        
@@ -54,7 +54,7 @@ class ambiance():
     return data
 
   def disable(self, alarmKey):
-    ambiance = ConfigParser.ConfigParser()
+    ambiance = configparser.ConfigParser()
     alarms.read(self.ambianceFile)
     
     if alarm.has_section(alarmKey):
@@ -62,7 +62,7 @@ class ambiance():
       alarm.remove_section(alarmKey)
       alarm.setboolean(alarmKey, 'enable', 'false')
     
-      with open(self.ambianceFile, 'wb') as configfile:
+      with open(self.ambianceFile, 'w') as configfile:
         alarm.write(configfile)
 
       return True
@@ -70,7 +70,7 @@ class ambiance():
     return False
     
   def enable(self, alarmKey):    
-    ambiance = ConfigParser.ConfigParser()
+    ambiance = configparser.ConfigParser()
     alarms.read(self.ambianceFile)
     
     if alarm.has_section(alarmKey):
@@ -78,7 +78,7 @@ class ambiance():
       alarm.remove_section(alarmKey)
       alarm.setboolean(alarmKey, 'enable', 'true')
     
-      with open(self.ambianceFile, 'wb') as configfile:
+      with open(self.ambianceFile, 'w') as configfile:
         alarm.write(configfile)
 
       return True
@@ -86,14 +86,14 @@ class ambiance():
     return False
     
   def delete(self, alarmKey):    
-    ambiance = ConfigParser.ConfigParser()
+    ambiance = configparser.ConfigParser()
     alarms.read(self.ambianceFile)
     
     if alarm.has_section(alarmKey):
       
       alarm.remove_section(alarmKey)
       
-      with open(self.ambianceFile, 'wb') as configfile:
+      with open(self.ambianceFile, 'w') as configfile:
         alarm.write(configfile)
         
       return True
@@ -111,14 +111,14 @@ class ambiance():
     m.update(sName)
     alarmKey = m.hexdigest()
  
-    alarm = ConfigParser.ConfigParser()
+    alarm = configparser.ConfigParser()
     alarm.add_section(alarmKey)
     alarm.set(alarmKey, 'time', str(sTime))
     alarm.set(alarmKey, 'days', ','.join(aDays))
     alarm.set(alarmKey, 'name', sName)
     alarm.set(alarmKey, 'enable', bEnable)
     
-    with open(self.ambianceFile, 'wb') as configfile:
+    with open(self.ambianceFile, 'w') as configfile:
       alarm.write(configfile)
       
     return alarmKey
@@ -143,7 +143,7 @@ class ambiance():
     oScreen.alarmState = 0
     
     if alarmKey != False: 
-      alarm = ConfigParser.ConfigParser()
+      alarm = configparser.ConfigParser()
       alarm.read(self.ambianceFile)
     
       soundFile = '%s/../sounds/alarm/%s' % (os.path.dirname(__file__), alarm.get(alarmKey, 'sound'))
@@ -235,7 +235,7 @@ class ambiance():
 
   def getAmbiance(self):
     if os.path.isfile(self.ambianceConf):
-      ambiance = ConfigParser.ConfigParser()
+      ambiance = configparser.ConfigParser()
       ambiance.read(self.ambianceConf)
   
       if ambiance.has_option('general', 'title'):
@@ -245,14 +245,52 @@ class ambiance():
   
     return False
 
+  def setRain(self, rain):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      if int(rain) in [constant.RAIN_LEVEL_NONE, constant.RAIN_LEVEL_LIGHT, constant.RAIN_LEVEL_MODERATE, constant.RAIN_LEVEL_HEAVY]:
+        ambiance.set('general', 'rain', str(rain))
+
+        with open(self.ambianceConf, 'w') as configfile:
+          ambiance.write(configfile)
+
+        return True
+
+    return False;
+
+  def getRain(self):
+    ambiance = self.getAmbiance()
+    return int(ambiance.get('general', 'rain', fallback=constant.RAIN_LEVEL_NONE))
+
+  def setThunderstorm(self, thunderstorm):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      if int(thunderstorm) in [constant.THUNDERSTORM_LEVEL_NONE, constant.THUNDERSTORM_LEVEL_LIGHT, constant.THUNDERSTORM_LEVEL_MODERATE, constant.THUNDERSTORM_LEVEL_HEAVY]:
+        ambiance.set('general', 'thunderstorm', str(thunderstorm))
+
+        with open(self.ambianceConf, 'w') as configfile:
+          ambiance.write(configfile)
+
+        return True
+
+    return False;
+
+  def getThunderstorm(self):
+    ambiance = self.getAmbiance()
+    return int(ambiance.get('general', 'thunderstorm', fallback=constant.RAIN_LEVEL_NONE))
+
   def setVolume(self, volume):
     if os.path.isfile(self.ambianceConf):
-      ambiance = ConfigParser.ConfigParser()
+      ambiance = configparser.ConfigParser()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('general', 'volume', volume)
     
-      with open(self.ambianceConf, 'wb') as configfile:
+      with open(self.ambianceConf, 'w') as configfile:
         ambiance.write(configfile)
 
       return True

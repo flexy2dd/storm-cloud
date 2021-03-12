@@ -1,32 +1,37 @@
 apt-get install git
 
-cd /opt/
+#cd /opt/
 
-git clone https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
-git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
-git clone https://github.com/BLavery/lib_oled96
-pip3 install adafruit-circuitpython-ssd1306
+#git clone https://github.com/adafruit/Adafruit-Raspberry-Pi-Python-Code.git
+#git clone https://github.com/adafruit/Adafruit_Python_SSD1306.git
+#git clone https://github.com/BLavery/lib_oled96
+#pip3 install adafruit-circuitpython-ssd1306
+#apt-get install nodejs npm 
+#apt-get install libavcodec-extra-56 libav-tools alsa-utils pulseaudio mpg123
 
-
-apt-get install nodejs npm 
-
-apt-get install build-essential python3-pip python3-pygame python3-dev python3-rpi.gpio python3-pil python-smbuspython-pycurl  python-dateutil i2c-tools libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff5
-pip3 install luma.oled configparser python-dateutil
-
-apt-get install libavcodec-extra-56 libav-tools alsa-utils pulseaudio mpg123
+apt-get install git build-essential python3-pip python3-pygame python3-dev python3-rpi.gpio python3-pil python-smbuspython-pycurl  python-dateutil i2c-tools libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff5 libasound2-dev
+pip3 install luma.oled configparser python-dateutil simpleaudio python-socketio aiohttp aiodns
 
 
-cp alarm-clock.sh /etc/init.d/storm-cloud.sh
-chmod +x /etc/init.d/storm-cloud.sh
-chmod 755 /etc/init.d/storm-cloud.sh
+cp strom-cloud-manager.service /etc/systemd/system/strom-cloud-manager.service
+cp strom-cloud-server.service /etc/systemd/system/strom-cloud-server.service
+cp strom-cloud-player.service /etc/systemd/system/strom-cloud-player.service
 
-pip install --upgrade google-api-python-client
-pip install --upgrade python-crontab
+alias relaod-bash='source ~/.bashrc'
 
-cp alarm-clock.service /etc/systemd/system/alarm-clock.service
+alias sc='cd /opt/storm-cloud'
 
-alias logs='journalctl -f -u alarm-clock'
-alias astart='systemctl start alarm-clock.service'
-alias astop='systemctl stop alarm-clock.service'
-alias arestart='astop && astart'
-alias ac='cd /opt/alarm-clock'
+alias manager-start='systemctl start strom-cloud-manager.service'
+alias manager-stop='systemctl stop strom-cloud-manager.service'
+alias manager-restart='manager-stop && manager-start'
+alias manager-logs='journalctl -f -u strom-cloud-manager'
+
+alias server-start='systemctl start strom-cloud-server.service'
+alias server-stop='systemctl stop strom-cloud-server.service'
+alias server-restart='server-stop && server-start'
+alias server-logs='journalctl -f -u strom-cloud-server'
+
+alias player-start='systemctl start strom-cloud-player.service'
+alias player-stop='systemctl stop strom-cloud-player.service'
+alias player-restart='player-stop && player-start'
+alias player-logs='journalctl -f -u strom-cloud-player'

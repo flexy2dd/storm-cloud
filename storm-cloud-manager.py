@@ -1,5 +1,6 @@
 import sys
 import os
+os.environ['PYGAME_HIDE_SUPPORT_PROMPT'] = "hide"
 import re
 import signal
 import argparse
@@ -20,7 +21,7 @@ from modules import screen
 from modules import rotary
 from modules import constant
 #from modules import alarm
-#from modules import ambiance
+from modules import ambiance
 
 # ===========================================================================
 # Logging
@@ -74,16 +75,17 @@ menu_data = {
   'options':[
 #    { 'title': "Reveil", 'type': constant.MENU_COMMAND, 'command': 'setAlarm' },
 #    { 'title': "Ambiance", 'type': constant.MENU_COMMAND, 'command': 'setAmbiance' },
+    { 'title': "Snooze", 'type': constant.MENU_COMMAND, 'command': 'setSnooze' },
     { 'title': "Ambiance", 'type': constant.MENU_MENU,
       'options': [
-        { 'title': "Select", 'type': constant.MENU_COMMAND, 'command': 'setAmbiance' },
-        { 'title': "Volume", 'type': constant.MENU_COMMAND, 'command': 'setAmbianceVol' }
-#        { 'title': "Date", 'type': constant.MENU_COMMAND, 'command': 'setDate' },
+        { 'title': "Pluie", 'type': constant.MENU_COMMAND, 'command': 'setRain' },
+        { 'title': "Orage", 'type': constant.MENU_COMMAND, 'command': 'setStorm' },
       ]
     },
     { 'title': "Parametres", 'type': constant.MENU_MENU,
       'options': [
-        { 'title': "Informations", 'type': 'viewInfos'},
+        { 'title': "Volume", 'type': constant.MENU_COMMAND, 'command': 'setVolume' },
+        { 'title': "Informations", 'type': 'viewInfos'}
 #        { 'title': "Heure", 'type': constant.MENU_COMMAND, 'command': 'setTime' },
 #        { 'title': "Date", 'type': constant.MENU_COMMAND, 'command': 'setDate' },
       ]
@@ -97,6 +99,13 @@ menu_data = {
 oScreen = screen.screen()
 oScreen.cls()
 oScreen.debug('init clock')
+oScreen.debug("ip: %s" % network.get_lan_ip())
+oScreen.sleep(0.5)
+
+oMenu = menu.menu()
+oMenu.viewInfos(oScreen)
+
+oScreen.sleep(4)
 
 # ===========================================================================
 # Rotary encoder
@@ -146,8 +155,6 @@ oRotary = rotary.rotary(
 #
 #    # Wait a quarter second (less than 1 second to prevent colon blinking getting in phase with odd/even seconds).
 #    time.sleep(0.10)
-
-oScreen.sleep(0.5)
 
 # Continually update 
 while(True):

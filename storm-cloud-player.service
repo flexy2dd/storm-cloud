@@ -1,0 +1,15 @@
+[Unit]
+Description=Storm Cloud Player
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/python3 /opt/storm-cloud/storm-cloud-player.py
+WorkingDirectory=/opt/storm-cloud
+StandardOutput=syslog
+StandardError=syslog
+Restart=always
+User=root
+PIDFile=/tmp/storm-cloud-player.pid
+
+[Install]
+WantedBy=multi-user.target
