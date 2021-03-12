@@ -79,7 +79,7 @@ menu_data = {
     { 'title': "Ambiance", 'type': constant.MENU_MENU,
       'options': [
         { 'title': "Pluie", 'type': constant.MENU_COMMAND, 'command': 'setRain' },
-        { 'title': "Orage", 'type': constant.MENU_COMMAND, 'command': 'setStorm' },
+        { 'title': "Orage", 'type': constant.MENU_COMMAND, 'command': 'setThunder' },
       ]
     },
     { 'title': "Parametres", 'type': constant.MENU_MENU,
@@ -101,11 +101,6 @@ oScreen.cls()
 oScreen.debug('init clock')
 oScreen.debug("ip: %s" % network.get_lan_ip())
 oScreen.sleep(0.5)
-
-oMenu = menu.menu()
-oMenu.viewInfos(oScreen)
-
-oScreen.sleep(4)
 
 # ===========================================================================
 # Rotary encoder

@@ -43,8 +43,8 @@ class screen():
     self.logoWifi100 = Image.open('%s/../icons/wifi-100.png' % os.path.dirname(__file__))
     self.logoWifi75  = Image.open('%s/../icons/wifi-75.png' % os.path.dirname(__file__))
     self.logoWifi50  = Image.open('%s/../icons/wifi-50.png' % os.path.dirname(__file__))
-    self.logoWifi25  = Image.open('%s/../icons/wifi-0.png' % os.path.dirname(__file__)).convert("RGBA")
-    self.logoWifi0   = Image.open('%s/../icons/wifi-0.png' % os.path.dirname(__file__)).convert("RGBA")
+    self.logoWifi25  = Image.open('%s/../icons/wifi-25.png' % os.path.dirname(__file__))
+    self.logoWifi0   = Image.open('%s/../icons/wifi-0.png' % os.path.dirname(__file__))
     
   def display(self):
     self.device.display(self.image)

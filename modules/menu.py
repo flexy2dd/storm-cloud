@@ -1,10 +1,12 @@
 import RPi.GPIO as GPIO
 import time
 import math
-from pprint import pprint
+import os
+from PIL import ImageFont, ImageDraw, Image
 from modules import constant
 from modules import network
 from modules import ambiance
+from pprint import pprint
 
 class menu():
 
@@ -77,7 +79,19 @@ class menu():
   
     # return index of the selected item
     return self.pos
-  
+
+  def rotaryRotateGenericCall(self, direction):
+    if direction=='left':
+      if self.genericPos < self.genericOptioncount:
+        self.genericPos += 1
+      else:
+        self.genericPos = self.genericOptioncount
+    elif direction=='right':
+      if self.genericPos > 0:
+        self.genericPos += -1
+      else:
+        self.genericPos = 0
+
   def rotaryRotateCall(self, direction):
     if direction=='left':
       if self.pos < self.optioncount:
@@ -112,7 +126,19 @@ class menu():
       elif menu['options'][getin]['type'] == 'viewInfos':
         self.viewInfos(screen)
       elif menu['options'][getin]['type'] == constant.MENU_COMMAND:
-  
+
+        if menu['options'][getin]['command'] == 'setRain':
+          rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.swithRelease = 0
+          self.setRain(screen)
+          rotary.setRotateCallback(self.rotaryRotateCall)
+
+        if menu['options'][getin]['command'] == 'setThunder':
+          rotary.setRotateCallback(self.rotaryRotateGenericCall)
+          self.swithRelease = 0
+          self.setThunder(screen)
+          rotary.setRotateCallback(self.rotaryRotateCall)
+
         if menu['options'][getin]['command'] == 'setAmbiance':
           self.setAmbiance(screen)
   
@@ -133,14 +159,12 @@ class menu():
     screen.cls()
     screen.setText(0, 10, "ip: %s" % network.get_lan_ip(), 1)
 
-
-    left = 10
-    top = 15
+    left = 40
+    top = 22
     
-    screen.draw.rectangle((left, top, left+30, top+30), outline="white", fill="white")
+    screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
 
     level = int(network.get_wifi_signal())
-    level = 0
     if level>0 and level<=25:
       screen.draw.bitmap((left, top), screen.logoWifi25, fill="black")
     elif level>25 and level<=50:
@@ -172,13 +196,32 @@ class menu():
   def setRain(self, screen):
 
     oAmbiance = ambiance.ambiance()
-    oAmbiance.getRain()
+    iRain = oAmbiance.getRain()
 
-    if self.swithRelease==1:
-      self.swithRelease = 0
-#      break
+    left = 40
+    top = 22
+    logoRain = Image.open('%s/../icons/rain-%s.png' % (os.path.dirname(__file__), str(iRain)))
+    screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
+    screen.draw.bitmap((left, top), logoRain, fill="black")
 
-    time.sleep(0.10)
+    self.genericOptioncount = 4
+    self.genericPos = iRain
+    self.oldPos = iRain
+
+    while(True):
+      if self.oldPos != self.genericPos:
+        print('update logo')
+        logoRain = Image.open('%s/../icons/rain-%s.png' % (os.path.dirname(__file__), str(self.genericPos)))
+        screen.draw.rectangle((left, top, left+35, top+35), outline="white", fill="white")
+        screen.draw.bitmap((left, top), logoRain, fill="black")
+        self.oldPos = self.genericPos
+        screen.display()
+
+      if self.swithRelease==1:
+        self.swithRelease = 0
+        break
+
+      time.sleep(0.10)
 
   def setStorm(self, screen):
 
