@@ -19,14 +19,6 @@ from dateutil.rrule import *
 from dateutil.parser import *
 
 isVerbose = True
-ambiancePid = 'ambiance.pid'
-ambianceName = 'default'
-ambianceDuration = 5
-ambianceVolume = 50
-eventsDict = {}
-generalDeltaMin = 10
-generalDeltaMax = 20
-generalTitle = ''
 
 #
 # debug message
@@ -35,44 +27,6 @@ def debug(message):
   global isVerbose
   if isVerbose:
     print(message)
-
-#
-# main
-#
-def main(argv):
-  global ambianceName, ambianceDuration, ambianceVolume
-
-  parser = argparse.ArgumentParser(description="Alarm-clock Ambiance service")
-  parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
-  parser.add_argument("-n", "--ambiance", help="ambiance name (default '" + ambianceName + "')")
-  parser.add_argument("-d", "--duration", help="duration (in minutes)", type=int)
-  parser.add_argument("-V", "--volume", help="volume (0 > 100)", type=int)
-
-  args = parser.parse_args()
-
-  if args.duration:
-    ambianceDuration = args.duration
-
-  if args.ambiance:
-    ambianceName = args.ambiance
-
-  if args.volume:
-    ambianceVolume = args.volume
-
-  now = datetime.datetime.now()
-  limit = now + datetime.timedelta(0, 0, 0, 0, int(ambianceDuration))
-  unixTime = time.mktime(limit.timetuple())
-  debug('Limit ' + limit.strftime("%Y-%m-%d %H:%M:%S") + ' (unixtime:' + str(unixTime) + ')')
-  debug('Volume:' + str(ambianceVolume))
-
-  pidFile = ambiancePid
-  pid = configparser.ConfigParser()
-  pid.add_section('general')
-  pid['general']['duration'] = str(ambianceDuration)
-  pid['general']['limit'] = str(unixTime)
-  pid['general']['volume'] = str(ambianceVolume)
-  with open(ambiancePid, 'w') as configfile:
-    pid.write(configfile)
 
 #
 # get ambiance datas
@@ -161,6 +115,38 @@ def loadEvents(oAmbiance):
 
 if __name__ == "__main__":
   main(sys.argv[1:])
+
+  parser = argparse.ArgumentParser(description="Alarm-clock Ambiance service")
+  parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
+  parser.add_argument("-n", "--ambiance", help="ambiance name (default '" + ambianceName + "')")
+  parser.add_argument("-d", "--duration", help="duration (in minutes)", type=int)
+  parser.add_argument("-V", "--volume", help="volume (0 > 100)", type=int)
+
+  args = parser.parse_args()
+
+  if args.duration:
+    ambianceDuration = args.duration
+
+  if args.ambiance:
+    ambianceName = args.ambiance
+
+  if args.volume:
+    ambianceVolume = args.volume
+
+  now = datetime.datetime.now()
+  limit = now + datetime.timedelta(0, 0, 0, 0, int(ambianceDuration))
+  unixTime = time.mktime(limit.timetuple())
+  debug('Limit ' + limit.strftime("%Y-%m-%d %H:%M:%S") + ' (unixtime:' + str(unixTime) + ')')
+  debug('Volume:' + str(ambianceVolume))
+
+  pidFile = ambiancePid
+  pid = configparser.ConfigParser()
+  pid.add_section('general')
+  pid['general']['duration'] = str(ambianceDuration)
+  pid['general']['limit'] = str(unixTime)
+  pid['general']['volume'] = str(ambianceVolume)
+  with open(ambiancePid, 'w') as configfile:
+    pid.write(configfile)
 
   # load ambiance file
   oAmbiance = getAmbiance(ambianceName)
