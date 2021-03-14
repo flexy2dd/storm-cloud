@@ -13,6 +13,7 @@ from luma.oled.device import ssd1306
 from PIL import ImageFont, ImageDraw, Image
 
 from modules import constant
+from modules import ambiance
 
 # ===========================================================================
 # screen Class
@@ -29,6 +30,7 @@ class screen():
     self.draw = ImageDraw.Draw(self.image)
 
     self.pulseStatus = 1
+    self.pulsePos = 1
     self.fontSize = 10
     self.maxScreenLines = 6
     self.width = self.device.width
@@ -75,65 +77,55 @@ class screen():
 
     self.display()
     
-  def viewInfos(self):
-    self.cls()
-    self.display()
+  def remainingTime(self):
+
+    oAmbiance = ambiance.ambiance()
+    remainingtime = oAmbiance.getRemainingTime()
+    remainingtime = datetime.datetime.strptime(remainingtime, '%Y-%m-%d %H:%M:%S')
     
-  def clock(self):
-    now = datetime.datetime.now()
-    hour = now.hour
-    minute = now.minute
-    second = now.second             
+    nowTime = datetime.datetime.now().replace(microsecond=0) 
+    diffTime = remainingtime - nowTime
+   
+    d = diffTime.days  # days
+    h = divmod(diffTime.seconds, 3600)  # hours
+    m = divmod(h[1], 60)  # minutes
+    s = m[1] # seconds
+
+    hours = h[0] 
+    if d>0:
+      hours += d*24
     
+    minutes = m[0]
+
+    second = 0      
+    if int(m[0])==0 and int(hours)==0 and int(s)>0:
+      seconds = s
+
     font = ImageFont.truetype('%s/../fonts/digital-7mono.ttf' % os.path.dirname(__file__), 55)
     
-    self.draw.text((0, 0), now.strftime('%H') , font=font, fill=1)
-    self.draw.text((65, 0), now.strftime('%M') , font=font, fill=1)
-    
-    if ((now.second % 2) == 0): # Toggle colon at 1Hz
-      self.draw.text((46, 0), now.strftime(':') , font=font, fill=1)
-    
-  def alarmInfos(self, bEnable, sNext = ''): 
-    font = ImageFont.truetype('%s/../fonts/fontawesome-webfont.ttf' % os.path.dirname(__file__), 12)
-    if bEnable:
-      text = codecs.unicode_escape_decode(constant.FONT_AWESOME_ICONS["fa-bell-o"])[0]
-    else:
-      text = codecs.unicode_escape_decode(constant.FONT_AWESOME_ICONS["fa-bell-slash-o"])[0]
-
-    self.draw.text((0, 52), text, font=font, fill=1)
-    
-    font = ImageFont.truetype('%s/../fonts/FreeSans.ttf' % os.path.dirname(__file__), 12)
-    self.draw.text((14, 52), sNext, font=font, fill=1)
-
-  def signalLevel(self, level = 0):          
-    
-    left = 114
-    top = 52
-    
-    self.draw.rectangle((left, top, left+12, top+14), outline="white", fill="white")
-
-    level = int(level)
-    if level>0 and level<=25:
-      self.draw.bitmap((left, top), self.logoWifi25, fill="black")
-    elif level>25 and level<=50:
-      self.draw.bitmap((left, top), self.logoWifi50, fill="black")
-    elif level>50 and level<=75:
-      self.draw.bitmap((left, top), self.logoWifi75, fill="black")
-    elif level>75:
-      self.draw.bitmap((left, top), self.logoWifi100, fill="black")
-    else:
-      self.draw.bitmap((left, top), self.logoWifi0, fill="black")
-    self.display()
+    self.draw.text((0, 5), '{:0>2}'.format(hours) , font=font, fill=1)
+    self.draw.text((65, 5), '{:0>2}'.format(minutes) , font=font, fill=1)
+    self.draw.text((46, 5), ':' , font=font, fill=1)
 
   def pulse(self):
-    top = self.device.height-4
-    left = self.device.width-4
-    if self.pulseStatus==1:
-      self.draw.rectangle((top, left, self.device.height, self.device.width), outline="white", fill="white")
-      self.pulseStatus=0
+
+    step = 4
+
+    if self.pulseStatus == 1:
+      self.pulsePos = self.pulsePos + step
     else:
-      self.draw.rectangle((self.device.height-4, self.device.width-4, self.device.height, self.device.width), outline="black", fill="black")
-      self.pulseStatus=1
+      self.pulsePos = self.pulsePos - step
+
+    if self.pulsePos < 0:
+      self.pulsePos = self.pulsePos + (step * 2)
+      self.pulseStatus = 1
+
+    if self.pulsePos > self.device.width:
+      self.pulsePos = self.pulsePos - (step * 2)
+      self.pulseStatus = 0
+
+    self.draw.rectangle((0, self.device.height-1, self.device.width, self.device.height-1), outline="black", fill="black")
+    self.draw.rectangle((self.pulsePos, self.device.height-1, self.pulsePos, self.device.height-1), outline="white", fill="white")
     self.display()
     
   def sleep(self, secondsWait = 5.0):

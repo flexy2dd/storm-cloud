@@ -28,12 +28,11 @@ class menu():
   
     self.pos = 0 #pos is the zero-based index of the hightlighted menu option. Every time runmenu is called, position returns to 0, when runmenu ends the position is returned and tells the program what opt$
     oldpos = None # used to prevent the screen being redrawn every time
+
     affStart = time.time()
-    secondsWait = 60
-  
-    milliseconds = float(secondsWait) * 1000
+    secondsWait = constant.MENU_WAIT_SECONDS
     totalWidth = screen.width
-    waitStep = totalWidth / milliseconds
+    waitStep = totalWidth / (float(secondsWait) * 1000)
     screen.draw.rectangle((0, screen.height-1, totalWidth, screen.height-1), 0, 1)
   
     # Loop until return key is pressed

@@ -1,6 +1,3 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
-
 import re
 import os
 import time
@@ -23,120 +20,6 @@ class ambiance():
 
   def __init__(self):
     self.ambianceFile = self.ambianceConf
-    self.ambianceList = self.getList(True)
-    
-  def getList(self, bOnlyEnable = False):
-    
-    data = {}
-    
-    if os.path.isfile(self.ambianceFile):
-      ambiance = configparser.ConfigParser()
-      ambiance.read(self.ambianceFile)
-      
-      for section in ambiance.sections():        
-        if ambiance.has_option(section, 'time'):
-          
-          bEnable = ambiance.getboolean(section, 'enable')
-          
-          if (bOnlyEnable and not bEnable):
-            continue
-
-          sDays = ambiance.get(section, 'days')
-          sTime = ambiance.get(section, 'time')
-          
-          data[section] = {} 
-          data[section]['key']    = section
-          data[section]['enable'] = bEnable
-          data[section]['name']   = ambiance.get(section, 'name')
-          data[section]['time']   = sTime
-          data[section]['days']   = string.split(sDays, ',')
-
-    return data
-
-  def disable(self, alarmKey):
-    ambiance = configparser.ConfigParser()
-    alarms.read(self.ambianceFile)
-    
-    if alarm.has_section(alarmKey):
-      
-      alarm.remove_section(alarmKey)
-      alarm.setboolean(alarmKey, 'enable', 'false')
-    
-      with open(self.ambianceFile, 'w') as configfile:
-        alarm.write(configfile)
-
-      return True
-    
-    return False
-    
-  def enable(self, alarmKey):    
-    ambiance = configparser.ConfigParser()
-    alarms.read(self.ambianceFile)
-    
-    if alarm.has_section(alarmKey):
-      
-      alarm.remove_section(alarmKey)
-      alarm.setboolean(alarmKey, 'enable', 'true')
-    
-      with open(self.ambianceFile, 'w') as configfile:
-        alarm.write(configfile)
-
-      return True
-
-    return False
-    
-  def delete(self, alarmKey):    
-    ambiance = configparser.ConfigParser()
-    alarms.read(self.ambianceFile)
-    
-    if alarm.has_section(alarmKey):
-      
-      alarm.remove_section(alarmKey)
-      
-      with open(self.ambianceFile, 'w') as configfile:
-        alarm.write(configfile)
-        
-      return True
-    
-    return False
-
-  def update(self, sTime, aDays = ['mon','tue','wed','thu','fri'], sName = 'default', bEnable = True):
-    self.add(sTime, aDays, sName, bEnable)
-      
-  def add(self, sTime, aDays = ['mon','tue','wed','thu','fri'], sName = 'default', bEnable = True):
-    
-    m = hashlib.sha1()
-    m.update(sTime)
-    m.update(','.join(aDays))
-    m.update(sName)
-    alarmKey = m.hexdigest()
- 
-    alarm = configparser.ConfigParser()
-    alarm.add_section(alarmKey)
-    alarm.set(alarmKey, 'time', str(sTime))
-    alarm.set(alarmKey, 'days', ','.join(aDays))
-    alarm.set(alarmKey, 'name', sName)
-    alarm.set(alarmKey, 'enable', bEnable)
-    
-    with open(self.ambianceFile, 'w') as configfile:
-      alarm.write(configfile)
-      
-    return alarmKey
-    
-  def isRun(self):
-    for alarmKey in self.alarmsList:
-      alarm = self.alarmsList[alarmKey]
-      
-      aAlarmTime = string.split(alarm['time'], ':')
-      tAlarmTime = datetime.time(hour = int(aAlarmTime[0]), minute = int(aAlarmTime[1]), second=0)
-            
-      nowTime = datetime.datetime.now().replace(microsecond=0) 
-      #pprint.pprint(nowTime)
-      if ((nowTime.time() == tAlarmTime) and (datetime.datetime.now().strftime('%a').lower() in alarm['days'])):
-        return alarmKey
-        
-      
-    return False
     
   def check(self, oScreen):
     alarmKey = self.isRun()
@@ -232,6 +115,11 @@ class ambiance():
       break      
      
     oScreen.alarmInfos(isEnable, sNext)
+
+  def getRemainingTime(self):
+    ambiance=self.getAmbiance()
+    nowTime = datetime.datetime.now().replace(microsecond=0) 
+    return ambiance.get('general', 'runningtime', fallback=str(nowTime))
 
   def getAmbiance(self):
     if os.path.isfile(self.ambianceConf):
