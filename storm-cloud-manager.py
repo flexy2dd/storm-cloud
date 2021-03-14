@@ -131,9 +131,6 @@ oRotary = rotary.rotary(
 
 screenStatus = 0
 
-oScreen.remainingTime()
-oScreen.sleep(4.0)
-
 # Continually update 
 while(True):
   try:
