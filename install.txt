@@ -16,7 +16,6 @@ cp storm-cloud-manager.service /etc/systemd/system/storm-cloud-manager.service
 cp storm-cloud-server.service /etc/systemd/system/storm-cloud-server.service
 cp storm-cloud-player.service /etc/systemd/system/storm-cloud-player.service
 
-
 alias rbash='source ~/.bashrc'
 alias relaod-bash='source ~/.bashrc'
 

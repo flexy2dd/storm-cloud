@@ -157,7 +157,7 @@ if confirm "Do you wish to continue?"; then
     if confirm "You wish update dependencies? [RECOMMENDED]"; then
         newline
         echo "Add some dependencies..."
-        apt-get install git build-essential python3-pip python3-pygame python3-dev python3-rpi.gpio python3-pil i2c-tools libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff5 libasound2-dev
+        apt-get install git build-essential python3-pip python3-pygame python3-dev python3-rpi.gpio python3-pil i2c-tools libjpeg-dev zlib1g-dev libfreetype6-dev liblcms2-dev libopenjp2-7 libtiff5
 
         newline
         echo "Add python dependencies..."
@@ -198,6 +198,13 @@ if confirm "Do you wish to continue?"; then
 	          ASK_TO_REBOOT=False
         fi
 
+        newline
+        echo "You can optionally install adafruit MAX98357 I2S Class-D Mono Amp."
+        newline
+        if confirm "Install it? [RECOMMENDED]"; then
+	          newline
+            curl -sS https://raw.githubusercontent.com/adafruit/Raspberry-Pi-Installer-Scripts/master/i2samp.sh | bash
+        fi
     fi
 
     newline
