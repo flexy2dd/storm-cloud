@@ -402,7 +402,7 @@ class menu():
       if self.swithRelease==1:
         self.swithRelease = 0
         oAmbiance.setSnooze(self.genericPos)
-        oAmbiance.play()
+        oAmbiance.start()
         break
 
       time.sleep(0.10)

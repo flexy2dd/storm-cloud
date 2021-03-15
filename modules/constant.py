@@ -35,6 +35,9 @@ THUNDERLIGHT_LED_CHANNEL    = 0
 AMBIANCE_PID = "ambiance.pid"
 AMBIANCE_CONF = "config.conf"
 
+AMBIANCE_DELTAMIN = 10
+AMBIANCE_DELTAMAX = 20
+
 FONT_AWESOME_ICONS = {
   "fa-glass": "\uf000",
   "fa-music": "\uf001",

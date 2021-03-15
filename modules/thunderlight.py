@@ -83,7 +83,7 @@ class thunderlight():
     self.strip.show();
   
   def lightningStrike(self, iPixel):
-
+    print('strike')
     callback = self.callbacks[random.randrange(0, len(self.callbacks)-1)]
     brightness = callback()
 
@@ -97,8 +97,8 @@ class thunderlight():
     self.currentDataPoint += 1
     self.currentDataPoint = self.currentDataPoint % self.numYValues
 
-  def strike(self, delayFactor=None, strikeFactor=None, focused=None):
-    
+  def strike(self, delay=None, delayFactor=None, strikeFactor=None, focused=None):
+
     if delayFactor!=None:
       self.delayFactor = delayFactor
     
@@ -107,6 +107,10 @@ class thunderlight():
 
     if focused!=None:
       self.focused = focused
+
+    if delay!=None:
+      print('strike delay ' + str(delay))
+      time.sleep(delay)
 
     iPixel = random.randrange(0, self.numLed)
     for i in range(0, random.randrange(5, self.strikeFactor)):

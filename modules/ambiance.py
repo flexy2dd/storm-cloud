@@ -31,6 +31,12 @@ class ambiance():
     if self.verbose:
       print(message)
 
+  def getFilePid(self):
+    return '%s/../%s' % (os.path.dirname(__file__), constant.AMBIANCE_PID)
+
+  def getFileConf(self):
+    return '%s/../%s' % (os.path.dirname(__file__), constant.AMBIANCE_CONF)
+
   def getAmbiance(self):
     if os.path.isfile(self.ambianceConf):
       oAmbiance = configparser.ConfigParser()
@@ -44,19 +50,23 @@ class ambiance():
     return False
 
   def isRunning(self):
-    return True
+    return pygame.mixer.get_busy()
 
   def getRemainingSeconds(self):
-    oAmbiance = self.getAmbiance()
-
-    nowTime = datetime.datetime.now().replace(microsecond=0)
-    startTime = nowTime
+    nowTime = time.mktime(datetime.datetime.now().replace(microsecond=0).timetuple())
+    targetTime = nowTime
 
     if os.path.isfile(constant.AMBIANCE_PID):
       f = open(constant.AMBIANCE_PID, "r")
-      startTime = f.read()
+      targetTime = f.read()
 
-    timeDelta = nowTime - startTime
+    targetTime = datetime.datetime.fromtimestamp(float(targetTime)) 
+    nowTime = datetime.datetime.fromtimestamp(float(nowTime))
+    
+    if targetTime < nowTime:
+      return 0
+
+    timeDelta = targetTime - nowTime
 
     return timeDelta.total_seconds()
 
@@ -167,27 +177,25 @@ class ambiance():
     ambiance=self.getAmbiance()
     return int(ambiance.get('general', 'snooze', fallback='30'))
 
-  def play(self):
+  def start(self):
+    if os.path.exists(self.getFilePid()):
+      os.remove(self.getFilePid())
+  
+    iSnooze = self.getSnooze()
+    unixTime = time.mktime(datetime.datetime.now().replace(microsecond=0).timetuple())
+    f = open(self.getFilePid(), "w")
+    f.write(str(unixTime + (iSnooze * 60)))
+    f.close()
     
-    # pidFile = constant.AMBIANCE_PID
-    # pid = configparser.ConfigParser()
-    # pid.add_section('general')
-    # pid['general']['start'] = str(unixTime)
-    # with open(ambiancePid, 'w') as configfile:
-    #   pid.write(configfile)
-
-    #f = open("demofile2.txt", "a")
-    #f.write("Now the file has more content!")
-    #f.close()
-
-    # now = datetime.datetime.now()
-    # unixTime = time.mktime(now.timetuple())
-    # if args.verbose:
-    #   print('Start ' + now.strftime("%Y-%m-%d %H:%M:%S") + ' (unixtime:' + str(unixTime) + ')')
-
     return True
     
   def stop(self):
+    if os.path.exists(self.getFilePid()):
+      os.remove(self.getFilePid())
+
+    pygame.mixer.music.fadeout(4000)
+    pygame.mixer.music.stop()
+
     return True
     
   def loadEvents(self):
@@ -195,8 +203,6 @@ class ambiance():
     oAmbianceConf.read(self.ambianceConf)
 
     iEvent = int(oAmbianceConf.get('general', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
-    iLightDelay = int(oAmbianceConf.get('light', 'delay', fallback=0))
-    iLightForce = int(oAmbianceConf.get('light', 'force', fallback=1))
     iAmbianceVolume = int(oAmbianceConf.get('general', 'volume', fallback=50))
 
     regexp = r".*/(thunder-" + str(iEvent) + "-.*)\.(.*)"
@@ -216,12 +222,15 @@ class ambiance():
         eventFileConf = 'sounds/thunder/' + fileRoot + '.conf'
         if os.path.isfile(eventFileConf):
           oEventConf.read(eventFileConf)
-        
+
         fVolume = 100.0
         if oEventConf.has_option('general', 'volume'):
           fVolume = oEventConf.getfloat('general', 'volume', fallback=100)
         
         iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
+
+        iLightDelay = int(oEventConf.get('light', 'delay', fallback=0))
+        iLightForce = int(oEventConf.get('light', 'force', fallback=1))
         
         eventFile = '%s/../sounds/thunder/%s.%s' % (os.path.dirname(__file__), fileRoot, fileExt)
         self.debug('load event ' + eventFile)
