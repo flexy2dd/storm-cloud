@@ -32,6 +32,9 @@ THUNDERLIGHT_LED_BRIGHTNESS = 255
 THUNDERLIGHT_LED_INVERT     = False
 THUNDERLIGHT_LED_CHANNEL    = 0
 
+AMBIANCE_PID = "ambiance.pid"
+AMBIANCE_CONF = "config.conf"
+
 FONT_AWESOME_ICONS = {
   "fa-glass": "\uf000",
   "fa-music": "\uf001",
