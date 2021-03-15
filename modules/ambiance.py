@@ -11,6 +11,7 @@ import glob
 import configparser
 import random
 from modules import constant
+from modules import thunderlight
 from os import listdir
 from os.path import isfile, join
 
@@ -204,6 +205,7 @@ class ambiance():
 
     iEvent = int(oAmbianceConf.get('general', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
     iAmbianceVolume = int(oAmbianceConf.get('general', 'volume', fallback=50))
+    oThunderlight = thunderlight.thunderlight()
 
     regexp = r".*/(thunder-" + str(iEvent) + "-.*)\.(.*)"
     eventsDict = {}
@@ -229,8 +231,10 @@ class ambiance():
         
         iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
 
-        iLightDelay = int(oEventConf.get('light', 'delay', fallback=0))
-        iLightForce = int(oEventConf.get('light', 'force', fallback=1))
+        iLightOffset = int(oEventConf.get('light', 'offset', fallback=0))
+        iLightDelay = int(oEventConf.get('light', 'delay', fallback=oThunderlight.getDelayFactor()))
+        iLightStrike = int(oEventConf.get('light', 'force', fallback=oThunderlight.getStrikeFactor()))
+        iLightBright = int(oEventConf.get('light', 'bright', fallback=oThunderlight.getBrightFactor()))
         
         eventFile = '%s/../sounds/thunder/%s.%s' % (os.path.dirname(__file__), fileRoot, fileExt)
         self.debug('load event ' + eventFile)
@@ -239,7 +243,7 @@ class ambiance():
         oEvent.set_volume(iVolume)
     
         self.debug('..loaded ' + str(eventIndex) + '(duration:' + str(oEvent.get_length()) + ', volume:' + str(iVolume) + ')')
-        eventsDict[eventIndex] = {'file' : eventFile, 'oEvent' : oEvent, 'duration' : oEvent.get_length(), 'volume' : iVolume, 'lightDelay': iLightDelay, 'lightForce': iLightForce}
+        eventsDict[eventIndex] = {'file' : eventFile, 'oEvent' : oEvent, 'duration' : oEvent.get_length(), 'volume' : iVolume, 'lightOffset': iLightOffset, 'lightDelay': iLightDelay, 'lightStrike': iLightStrike, 'lightBright': iLightBright}
         
         eventIndex += 1
       else:

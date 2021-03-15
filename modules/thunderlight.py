@@ -35,6 +35,8 @@ class thunderlight():
     self.delayFactor = 50
     # factor to calculate the number of lightnings in a sequence  
     self.strikeFactor = 9
+    # factor to calculate the brightness
+    self.brightFactor = 500
 
     # Set tooo True if you to keep the lightning focused in one LED.
     self.focused = False
@@ -82,12 +84,21 @@ class thunderlight():
     self.strip.setPixelColor(iPixel, iColor);
     self.strip.show();
   
+  def getDelayFactor(self):
+    return self.delayFactor
+
+  def getStrikeFactor(self):
+    return self.strikeFactor
+
+  def getBrightFactor(self):
+    return self.brightFactor
+    
   def lightningStrike(self, iPixel):
-    print('strike')
     callback = self.callbacks[random.randrange(0, len(self.callbacks)-1)]
     brightness = callback()
 
-    scaledWhite = int(abs(float(brightness) * 500))
+    scaledWhite = int(abs(float(brightness) * self.brightFactor))
+    print("scaledWhite: " + str(scaledWhite))
     
     self.strip.setPixelColor(iPixel, Color(scaledWhite, scaledWhite, scaledWhite))
     self.strip.show()
@@ -97,7 +108,10 @@ class thunderlight():
     self.currentDataPoint += 1
     self.currentDataPoint = self.currentDataPoint % self.numYValues
 
-  def strike(self, delay=None, delayFactor=None, strikeFactor=None, focused=None):
+  def strike(self, delay=None, delayFactor=None, strikeFactor=None, brightFactor=None, focused=None):
+
+    if brightFactor!=None:
+      self.brightFactor = brightFactor
 
     if delayFactor!=None:
       self.delayFactor = delayFactor

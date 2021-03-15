@@ -15,6 +15,8 @@ import configparser
 import pprint
 import datetime
 import threading
+import asyncio
+import concurrent.futures
 
 from dateutil.relativedelta import *
 from dateutil.easter import *
@@ -25,41 +27,11 @@ from modules import ambiance
 from modules import constant
 from modules import thunderlight
 
-#
-# get ambiance datas
-#
-def getAmbiance(name):
-  global generalDeltaMin, generalDeltaMax, generalTitle
-
-  ambianceFile = "ambiance/" + name + ".cfg"
-  debug('Ambiance ' + name + ' (' + ambianceFile + ')')
-
-  if os.path.isfile(ambianceFile):
-    ambiance = configparser.ConfigParser()
-    ambiance.read(ambianceFile)
-
-    if ambiance.has_option('general', 'deltaMin'):
-      generalDeltaMin = ambiance.getint('general', 'deltaMin')
-
-    if ambiance.has_option('general', 'deltaMax'):
-      generalDeltaMax = ambiance.getint('general', 'deltaMax')
-
-    if ambiance.has_option('general', 'title'):
-      generalTitle = ambiance.get('general', 'title')
-
-    return ambiance
-
-  print('Ambiance nor found!')
-  sys.exit(2)
-
-  return False
-
-async def strike(oThunderlight, delayTime):
-  print('stike')
-  oThunderlight.strike(delay=delayTime)
-  time.sleep(5.0)
-  print('stike end')
-
+pool = concurrent.futures.ThreadPoolExecutor()
+          
+async def strike(oThunderlight, delayTime, delayFactor, strikeFactor, brightFactor):
+  oThunderlight.strike(delay=delayTime, delayFactor=delayFactor, strikeFactor=strikeFactor, brightFactor=brightFactor)
+ 
 if __name__ == "__main__":
 #  main(sys.argv[1:])
 
@@ -82,7 +54,7 @@ if __name__ == "__main__":
   isRunning = False
 
   oThunderlight = thunderlight.thunderlight()
- 
+
   while True:
 
     remainingSecond = oAmbiance.getRemainingSeconds()
@@ -113,23 +85,21 @@ if __name__ == "__main__":
           eventDuration = eventsList[eventIndex]['duration']
           oEvent = eventsList[eventIndex]['oEvent']
 
-          print(eventsList)
+          delayTime = eventsList[eventIndex]['lightDelay'] / 1000
+          lightDelay = eventsList[eventIndex]['lightDelay']
+          lightStrike = eventsList[eventIndex]['lightStrike']
+          lightBright = eventsList[eventIndex]['lightBright']
+    
+          pool.submit(asyncio.run, strike(oThunderlight, delayTime=delayTime, delayFactor=lightDelay, strikeFactor=lightStrike, brightFactor=lightBright))
 
-#          threadStrike = threading.Thread(target=oThunderlight.strike(), args=('delay=' + eventsList[eventIndex]['lightDelay']))
-#          threadStrike.start()
-          strike(oThunderlight, delay=eventsList[eventIndex]['lightDelay'])
-          
-#          eventCurrent=oEvent.play()
-                    
-          #eventsList[eventIndex]['lightForce']
+          eventCurrent=oEvent.play()
 
           if args.verbose: print('play event ' + eventsList[eventIndex]['file'] + ' (' + str(eventsList[eventIndex]['duration']) + 's)')
         
         if eventCurrent!=None and eventCurrent.get_busy():
+          if args.verbose: print('Wait next event')
           time.sleep(0.0)
         else:
-          if args.verbose: print("%i \r" % (eventDelta))
-        
           eventCurrent=None
           if eventDelta<=0:
             eventDelta = random.randint(generalDeltaMin, generalDeltaMax)
@@ -146,55 +116,5 @@ if __name__ == "__main__":
 
         oThunderlight.turnAllOff()
         oAmbiance.stop();
-
-      #os.remove("demofile.txt") 
-    
-      #print(remainingSecond)
-      #if os.path.isfile(oAmbiance.getFilePid()):
-
-      #  remainingTime = oAmbiance.getRemainingTime()
-
-#    if not os.path.isfile('ambience.pid'):
-#      print('wait ' + str(eventDelta) + ' seconds for next event')
-#      oAmbiencePid = configparser.ConfigParser()
-#    oAmbiance.playBackground()
-#      events = oAmbiance.loadEvents()
-#      print(events)
-#      oAmbianceConf = configparser.ConfigParser()
-#      oAmbianceConf.read(constant.AMBIANCE_CONF)
-#    oAmbiencePid.read(constant.AMBIANCE_PID)
-
-#    unixTimeLimit = oAmbiencePid.getfloat('general', 'limit')
-#    unixTimeNow = time.mktime(datetime.datetime.now().timetuple())
-
-#    if unixTimeNow>unixTimeLimit:
-#      print('limit:' + str(unixTimeLimit))
-#      print('unixTimeNow:' + str(unixTimeNow))
-#      pygame.mixer.music.fadeout(4000)
-#      pygame.mixer.music.stop()
-#      time.sleep(4.25)
-#      sys.exit(0)
-
-#    if eventCurrent==None and eventDelta==0:
-#      eventIndex = random.randint(0, len(eventsDict)-1)
-
-#      eventDuration = eventsDict[eventIndex]['duration']
-#      oEvent = eventsDict[eventIndex]['oEvent']
-#      eventCurrent=oEvent.play()
-#      print('play event ' + eventsDict[eventIndex]['file'] + ' (' + str(eventsDict[eventIndex]['duration']) + 's)')
-
-#    if eventCurrent!=None and eventCurrent.get_busy():
-#      time.sleep(0.0)
-#    else:
-#      sys.stdout.write("%i \r" % (eventDelta))
-
-#      eventCurrent=None
-#      if eventDelta<=0:
-#        eventDelta = random.randint(generalDeltaMin, generalDeltaMax)
-#        print('wait ' + str(eventDelta) + ' seconds for next event')
-#      else:
-#        eventDelta -= 1
-
-#    sys.stdout.flush()
 
     time.sleep(1.0)
