@@ -21,8 +21,6 @@ from modules import screen
 from modules import rotary
 from modules import constant
 from modules import ambiance
-#from modules import alarm
-
 
 # ===========================================================================
 # Logging
