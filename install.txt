@@ -16,9 +16,12 @@ cp storm-cloud-manager.service /etc/systemd/system/storm-cloud-manager.service
 cp storm-cloud-server.service /etc/systemd/system/storm-cloud-server.service
 cp storm-cloud-player.service /etc/systemd/system/storm-cloud-player.service
 
+
+alias rbash='source ~/.bashrc'
 alias relaod-bash='source ~/.bashrc'
 
 alias sc='cd /opt/storm-cloud'
+alias p='sc'
 
 alias manager-start='systemctl start storm-cloud-manager.service'
 alias manager-stop='systemctl stop storm-cloud-manager.service'
