@@ -84,7 +84,6 @@ class ambiance():
       
     return "%02i:%02i" % (hours, minutes)
 
-
   def setRain(self, rain):
     if os.path.isfile(self.ambianceConf):
       ambiance = configparser.ConfigParser()

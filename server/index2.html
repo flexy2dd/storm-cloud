@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+  <title>GPIO Control</title>
+  <head>
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css" rel="stylesheet">
+    <script src="https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js"></script>
+    <style>
+      @use "@material/icon-button";
+      @use "@material/top-app-bar/mdc-top-app-bar";
+      @include icon-button.core-styles;
+    </style>
+  </head>
+  <body>
+
+    <button class="mdc-button foo-button">
+      <div class="mdc-button__ripple"></div>
+      <span class="mdc-button__label">Button</span>
+    </button>
+
+    <button type="button" id="state" onclick="LEDOn()" style="background-color:green;">ON</button>
+    <button type="button" id="state" onclick="LEDOff()" style="background-color:red;">OFF</button>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.0/socket.io.js"></script>
+    <script>
+        mdc.ripple.MDCRipple.attachTo(document.querySelector('.foo-button'));
+
+        import {MDCTopAppBar} from '@material/top-app-bar';
+        // Instantiation
+        const topAppBarElement = document.querySelector('.mdc-top-app-bar');
+        const topAppBar = new MDCTopAppBar(topAppBarElement);
+
+        var socket = io.connect(); //load socket.io-client and connect to the host
+        function LEDOn() {
+            socket.emit("state", 1); //send button state to server
+        }
+    
+        function LEDOff() {
+            socket.emit("state", 0); //send button state to server
+        }
+    </script>
+
+  </body>
+</html>
