@@ -98,9 +98,15 @@ class thunderlight():
     brightness = callback()
 
     scaledWhite = int(abs(float(brightness) * self.brightFactor))
-    print("scaledWhite: " + str(scaledWhite))
     
-    self.strip.setPixelColor(iPixel, Color(scaledWhite, scaledWhite, scaledWhite))
+    whiteFactor = scaledWhite
+    if whiteFactor > 255:
+      whiteFactor = 255
+
+    whiteFactor = int(whiteFactor // 4)
+    #whiteFactor = 0
+
+    self.strip.setPixelColor(iPixel, Color(scaledWhite, scaledWhite, scaledWhite, int(whiteFactor)))
     self.strip.show()
 
     time.sleep(random.randrange(5, self.delayFactor) / 100)
