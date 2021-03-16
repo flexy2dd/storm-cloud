@@ -12,38 +12,115 @@ import logging.handlers
 import RPi.GPIO as GPIO
 import socketio
 from aiohttp import web
+from modules import constant
+from modules import ambiance
 
-# https://tutorialedge.net/python/python-socket-io-tutorial/
-
-## creates a new Async Socket IO Server
+#sio = socketio.AsyncServer(logger=True, engineio_logger=True)
 sio = socketio.AsyncServer()
-## Creates a new Aiohttp Web Application
 app = web.Application()
-# Binds our Socket.IO server to our Web App
-## instance
 sio.attach(app)
 
-## we can define aiohttp endpoints just as we normally
-## would with no change
 async def index(request):
-    with open('server/index.html') as f:
-        return web.Response(text=f.read(), content_type='text/html')
+  """Serve the client-side application."""
+  with open('server/index.html') as f:
+    return web.Response(text=f.read(), content_type='text/html')
 
-## If we wanted to create a new websocket endpoint,
-## use this decorator, passing in the name of the
-## event we wish to listen out for
-@sio.on('message')
-async def print_message(sid, message):
-    ## When we receive a new event of type
-    ## 'message' through a socket.io connection
-    ## we print the socket ID and the message
-    print("Socket ID: " , sid)
-    print(message)
+#@sio.event
+#def connect(sid, environ):
+#  print("connect ", sid)
 
-## We bind our aiohttp endpoint to our app
-## router
+#@sio.event
+#def disconnect(sid):
+#  print('disconnect ', sid)
+
+@sio.event
+async def check_remaining(sid, data):
+  oAmbiance = ambiance.ambiance()
+  remainingSeconds = oAmbiance.getRemainingSeconds()
+  await sio.emit('update_remaining', {'remainingSeconds': str(remainingSeconds)})
+
+## SNOOZE
+@sio.event
+async def launch_snooze(sid, data):
+  oAmbiance = ambiance.ambiance()
+  snooze = oAmbiance.setSnooze(data)
+  oAmbiance.start();
+  await sio.emit('update_snooze', {'snooze': str(data)})
+
+@sio.event
+async def stop_snooze(sid, data):
+  oAmbiance = ambiance.ambiance()
+  oAmbiance.stop();
+  remainingSeconds = oAmbiance.getRemainingSeconds()
+  await sio.emit('update_remaining', {'remainingSeconds': str(remainingSeconds)})
+
+@sio.event
+async def get_snooze(sid, data):
+  oAmbiance = ambiance.ambiance()
+  snooze = oAmbiance.getSnooze()
+  await sio.emit('update_snooze', {'snooze': str(snooze)})
+  
+@sio.event
+async def set_snooze(sid, data):
+  oAmbiance = ambiance.ambiance()
+  snooze = oAmbiance.setSnooze(data)
+  await sio.emit('update_snooze', {'snooze': str(data)})
+
+## RAIN
+@sio.event
+async def get_rain(sid):
+  oAmbiance = ambiance.ambiance()
+  rain = oAmbiance.getRain()
+  await sio.emit('update_rain', {'rain': str(rain)})
+
+@sio.event
+async def set_rain(sid, data):
+  oAmbiance = ambiance.ambiance()
+  oAmbiance.setRain(data)
+  await sio.emit('update_rain', {'rain': str(data)})
+
+## THUNDER
+@sio.event
+async def get_thunder(sid):
+  oAmbiance = ambiance.ambiance()
+  thunder = oAmbiance.getThunder()
+  await sio.emit('update_thunder', {'thunder': str(thunder)})
+
+@sio.event
+async def set_thunder(sid, data):
+  oAmbiance = ambiance.ambiance()
+  oAmbiance.setThunder(data)
+  await sio.emit('update_thunder', {'thunder': str(data)})
+
+## LIGHT
+@sio.event
+async def get_light(sid):
+  oAmbiance = ambiance.ambiance()
+  light = oAmbiance.getLight()
+  await sio.emit('update_light', {'light': str(light)})
+
+@sio.event
+async def set_light(sid, data):
+  oAmbiance = ambiance.ambiance()
+  oAmbiance.setLight(data)
+  await sio.emit('update_light', {'light': str(data)})
+
+## VOLUME
+@sio.event
+async def get_volume(sid):
+  oAmbiance = ambiance.ambiance()
+  volume = oAmbiance.getVolume()
+  await sio.emit('update_volume', {'volume': str(volume)})
+
+@sio.event
+async def set_volume(sid, data):
+  oAmbiance = ambiance.ambiance()
+  oAmbiance.setVolume(data)
+  await sio.emit('update_volume', {'volume': str(data)})
+
+app.router.add_static('/static', 'server/static')
 app.router.add_get('/', index)
 
-## We kick off our server
 if __name__ == '__main__':
-    web.run_app(app)
+    web.run_app(app, port=80)
+    
