@@ -32,28 +32,38 @@ def debug(message):
 # main
 #
 if __name__ == "__main__":
+  parser = argparse.ArgumentParser(description="Alarm-clock Ambiance service")
+  parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
+  parser.add_argument("-f", "--delayFactor", help="delay factor volume (0 > 100)", type=int)
+  parser.add_argument("-s", "--strikeFactor", help="strike factor", type=int)
+  parser.add_argument("-b", "--brightFactor", help="bright factor", type=int)
+  parser.add_argument("-d", "--delay", help="delay", type=int)
 
-#  strip = Adafruit_NeoPixel(
-#      constant.THUNDERLIGHT_LED_COUNT, 
-#      constant.THUNDERLIGHT_LED_PIN, 
-#      constant.THUNDERLIGHT_LED_FREQ_HZ, 
-#      constant.THUNDERLIGHT_LED_DMA, 
-#      constant.THUNDERLIGHT_LED_INVERT, 
-#      constant.THUNDERLIGHT_LED_BRIGHTNESS, 
-#      constant.THUNDERLIGHT_LED_CHANNEL, 
-#      ws.SK6812_STRIP_RGBW
-#  )
-#  strip.begin()
-#  strip.setPixelColor(0, Color(139, 156, 200,100));
-#  strip.show();
-#  time.sleep(1.0)
-#  strip.setPixelColor(0, Color(0, 0, 255,100));
-#  strip.show();
+  args = parser.parse_args()
 
   oThunderlight = thunderlight.thunderlight()
+
+  if args.verbose:
+    oThunderlight.verbose = True
+
+  delayFactor = None
+  strikeFactor = None
+  brightFactor = None
+  delay = None
+
+  if args.delayFactor:
+    delayFactor = args.delayFactor
+
+  if args.strikeFactor:
+    strikeFactor = args.strikeFactor
+
+  if args.brightFactor:
+    brightFactor = args.brightFactor
+    
+  if args.delay:
+    delay = args.delay
  
-  oThunderlight.strike()
+  oThunderlight.strike(delay=delay, delayFactor=delayFactor, strikeFactor=strikeFactor, brightFactor=brightFactor, focused=None)
  
-  time.sleep(4.0)
   oThunderlight.turnAllOff()
 

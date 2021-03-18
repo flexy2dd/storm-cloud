@@ -27,6 +27,8 @@ class thunderlight():
       ws.SK6812_STRIP_RGBW
     )
     self.strip.begin()
+    
+    self.verbose = False
                            
     self.currentDataPoint = 0
     self.numLed = constant.THUNDERLIGHT_LED_COUNT
@@ -106,6 +108,8 @@ class thunderlight():
     whiteFactor = int(whiteFactor // 4)
     #whiteFactor = 0
 
+    if self.verbose: print('scaledWhite ' + str(scaledWhite) + ' whiteFactor ' + str(whiteFactor))
+
     self.strip.setPixelColor(iPixel, Color(scaledWhite, scaledWhite, scaledWhite, int(whiteFactor)))
     self.strip.show()
 
@@ -128,8 +132,12 @@ class thunderlight():
     if focused!=None:
       self.focused = focused
 
+    if self.verbose: print('brightFactor ' + str(self.brightFactor))
+    if self.verbose: print('delayFactor ' + str(self.delayFactor))
+    if self.verbose: print('strikeFactor ' + str(self.strikeFactor))
+
     if delay!=None:
-      print('strike delay ' + str(delay))
+      if self.verbose: print('strike delay ' + str(delay))
       time.sleep(delay)
 
     iPixel = random.randrange(0, self.numLed)

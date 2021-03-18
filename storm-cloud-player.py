@@ -31,7 +31,6 @@ async def strike(oThunderlight, delayTime, delayFactor, strikeFactor, brightFact
   oThunderlight.strike(delay=delayTime, delayFactor=delayFactor, strikeFactor=strikeFactor, brightFactor=brightFactor)
  
 if __name__ == "__main__":
-#  main(sys.argv[1:])
 
   parser = argparse.ArgumentParser(description="Alarm-clock Ambiance service")
   parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
@@ -52,6 +51,10 @@ if __name__ == "__main__":
   isRunning = False
 
   oThunderlight = thunderlight.thunderlight()
+  if args.verbose:
+    oThunderlight.verbose = True
+
+  oThunderlight.turnAllOff()
 
   while True:
 
@@ -95,12 +98,12 @@ if __name__ == "__main__":
           if args.verbose: print('play event ' + eventsList[eventIndex]['file'] + ' (' + str(eventsList[eventIndex]['duration']) + 's)')
         
         if eventCurrent!=None and eventCurrent.get_busy():
-          if args.verbose: print('Wait next event')
+          if args.verbose: print('Wait next event (' + str(eventDelta) + ')')
           time.sleep(0.0)
         else:
           eventCurrent=None
           if eventDelta<=0:
-            eventDelta = random.randint(generalDeltaMin, generalDeltaMax)
+            eventDelta = random.randint(oAmbiance.currentDeltaMin, oAmbiance.currentDeltaMax)
             if args.verbose: print('wait ' + str(eventDelta) + ' seconds for next event')
           else:
             eventDelta -= 1

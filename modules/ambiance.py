@@ -264,7 +264,7 @@ class ambiance():
           iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
       
           iLightOffset = int(oEventConf.get('light', 'offset', fallback=iDefaultLightOffset))
-          iLightDelay = int(oEventConf.get('light', 'delay', fallback=iDefaultLightOffset))
+          iLightDelay = int(oEventConf.get('light', 'delay', fallback=iDefaultLightDelay))
           iLightStrike = int(oEventConf.get('light', 'force', fallback=iDefaultLightStrike))
           iLightBright = int(oEventConf.get('light', 'bright', fallback=iDefaultLightBright))
           
