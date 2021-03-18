@@ -30,6 +30,7 @@ class ambiance():
     self.currentThunderLevel = 0
     
     # init sound mixer
+    pygame.mixer.pre_init(44100, -16, 2, 2048)
     pygame.mixer.init();
 
   def debug(self, message):
@@ -341,8 +342,8 @@ class ambiance():
       
       iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
       
-      self.currentDeltaMin = oEventConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
-      self.currentDeltaMax = oEventConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
+      self.currentDeltaMin = oBackgroundConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
+      self.currentDeltaMax = oBackgroundConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
       
       backgroundFile = '%s/../sounds/rain/%s.%s' % (os.path.dirname(__file__), rainFile['root'], rainFile['ext'])
       self.debug('load background ' + backgroundFile)
