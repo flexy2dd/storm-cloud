@@ -24,6 +24,8 @@ class ambiance():
   def __init__(self):
     self.ambianceConf = constant.AMBIANCE_CONF
     self.verbose = False
+    self.iDeltaMin = constant.AMBIANCE_DELTAMIN
+    self.iDeltaMax = constant.AMBIANCE_DELTAMAX
     
     # init sound mixer
     pygame.mixer.init();
@@ -206,6 +208,23 @@ class ambiance():
     iAmbianceVolume = int(oAmbianceConf.get('general', 'volume', fallback=50))
     oThunderlight = thunderlight.thunderlight()
 
+    # default values
+    fDefaultVolume = 100.00
+    iDefaultLightOffset = 0
+    iDefaultLightDelay = int(oThunderlight.getDelayFactor())
+    iDefaultLightStrike = int(oThunderlight.getStrikeFactor())
+    iDefaultLightBright = int(oThunderlight.getBrightFactor())
+
+    oEventDefaultConf = configparser.ConfigParser()
+    eventFileDefaultConf = 'sounds/thunder/thunder.conf'
+    if os.path.isfile(eventFileDefaultConf):
+      oEventDefaultConf.read(eventFileDefaultConf)
+      fDefaultVolume = oEventDefaultConf.getfloat('general', 'volume', fallback=fDefaultVolume)
+      iDefaultLightOffset = oEventDefaultConf.getint('light', 'offset', fallback=iDefaultLightOffset)
+      iDefaultLightDelay = oEventDefaultConf.getint('light', 'delay', fallback=iDefaultLightDelay)
+      iDefaultLightStrike = oEventDefaultConf.getint('light', 'force', fallback=iDefaultLightStrike)
+      iDefaultLightBright = oEventDefaultConf.getint('light', 'bright', fallback=iDefaultLightBright)
+
     regexp = r".*/(thunder-" + str(iEvent) + "-.*)\.(.*)"
     eventsDict = {}
     eventIndex = 0
@@ -224,16 +243,16 @@ class ambiance():
         if os.path.isfile(eventFileConf):
           oEventConf.read(eventFileConf)
 
-        fVolume = 100.0
+        fVolume = fDefaultVolume
         if oEventConf.has_option('general', 'volume'):
-          fVolume = oEventConf.getfloat('general', 'volume', fallback=100)
+          fVolume = oEventConf.getfloat('general', 'volume', fallback=fDefaultVolume)
         
         iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
 
-        iLightOffset = int(oEventConf.get('light', 'offset', fallback=0))
-        iLightDelay = int(oEventConf.get('light', 'delay', fallback=oThunderlight.getDelayFactor()))
-        iLightStrike = int(oEventConf.get('light', 'force', fallback=oThunderlight.getStrikeFactor()))
-        iLightBright = int(oEventConf.get('light', 'bright', fallback=oThunderlight.getBrightFactor()))
+        iLightOffset = int(oEventConf.get('light', 'offset', fallback=iDefaultLightOffset))
+        iLightDelay = int(oEventConf.get('light', 'delay', fallback=iDefaultLightOffset))
+        iLightStrike = int(oEventConf.get('light', 'force', fallback=iDefaultLightStrike))
+        iLightBright = int(oEventConf.get('light', 'bright', fallback=iDefaultLightBright))
         
         eventFile = '%s/../sounds/thunder/%s.%s' % (os.path.dirname(__file__), fileRoot, fileExt)
         self.debug('load event ' + eventFile)
@@ -259,6 +278,17 @@ class ambiance():
     iRain = int(oAmbianceConf.get('general', 'rain', fallback=constant.RAIN_LEVEL_NONE))
     iAmbianceVolume = int(oAmbianceConf.get('general', 'volume', fallback=50))
 
+    fDefaultVolume = 100.00
+    iDefaultDeltaMin = constant.AMBIANCE_DELTAMIN
+    iDefaultDeltaMax = constant.AMBIANCE_DELTAMAX
+    oDefaultConf = configparser.ConfigParser()
+    fileDefaultConf = 'sounds/rain/rain.conf'
+    if os.path.isfile(fileDefaultConf):
+      oDefaultConf.read(fileDefaultConf)
+      fDefaultVolume = oDefaultConf.getfloat('general', 'volume', fallback=fDefaultVolume)
+      iDefaultDeltaMin = oDefaultConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
+      iDefaultDeltaMax = oDefaultConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
+
     regexp = r".*/(rain-" + str(iRain) + "-.*)\.(.*)"
     rainFiles = []
     for file in glob.glob('sounds/rain/*.wav'):
@@ -281,11 +311,14 @@ class ambiance():
     if os.path.isfile(backgroundFileConf):
       oBackgroundConf.read(backgroundFileConf)
 
-    fVolume = 100.0
+    fVolume = fDefaultVolume
     if oBackgroundConf.has_option('general', 'volume'):
-      fVolume = oBackgroundConf.getfloat('general', 'volume', fallback=100)
+      fVolume = oBackgroundConf.getfloat('general', 'volume', fallback=fDefaultVolume)
 
     iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
+
+    self.iDeltaMin = oEventConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
+    self.iDeltaMax = oEventConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
 
     backgroundFile = '%s/../sounds/rain/%s.%s' % (os.path.dirname(__file__), rainFile['root'], rainFile['ext'])
     self.debug('load background ' + backgroundFile)
