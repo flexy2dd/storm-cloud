@@ -70,7 +70,7 @@ if __name__ == "__main__":
         eventsList = oAmbiance.loadEvents()
 
         eventCurrent = None
-        eventDelta = random.randint(constant.AMBIANCE_DELTAMIN, constant.AMBIANCE_DELTAMAX)
+        eventDelta = random.randint(oAmbiance.currentDeltaMin, oAmbiance.currentDeltaMax)
 
         if args.verbose: print('wait ' + str(eventDelta) + ' seconds for next event')
 
