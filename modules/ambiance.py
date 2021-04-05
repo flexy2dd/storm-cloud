@@ -11,6 +11,7 @@ import glob
 import configparser
 import random
 from modules import constant
+from modules import screen
 from modules import thunderlight
 from os import listdir
 from os.path import isfile, join
@@ -28,6 +29,9 @@ class ambiance():
     self.currentDeltaMax = constant.AMBIANCE_DELTAMAX
     self.currentRainLevel = 0
     self.currentThunderLevel = 0
+    self.currentBackground = None
+    self.currentBackgroundVolume = 0
+    self.currentVolume = 0
     
     # init sound mixer
     pygame.mixer.pre_init(44100, -16, 2, 2048)
@@ -182,6 +186,42 @@ class ambiance():
     ambiance=self.getAmbiance()
     return int(ambiance.get('general', 'snooze', fallback='30'))
 
+  def setEventDelta(self, delta):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      ambiance.set('event', 'delta', str(delta))
+
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
+
+      return True
+
+    return False;
+
+  def getEventDelta(self):
+    ambiance=self.getAmbiance()
+    return int(ambiance.get('event', 'delta', fallback='1'))
+
+  def setEventPos(self, delta):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      ambiance.set('event', 'pos', str(delta))
+    
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
+
+      return True
+
+    return False;
+
+  def getEventPos(self):
+    ambiance=self.getAmbiance()
+    return int(ambiance.get('event', 'pos', fallback='0'))
+
   def start(self):
     if os.path.exists(self.getFilePid()):
       os.remove(self.getFilePid())
@@ -198,8 +238,8 @@ class ambiance():
     if os.path.exists(self.getFilePid()):
       os.remove(self.getFilePid())
 
-    pygame.mixer.music.fadeout(4000)
-    pygame.mixer.music.stop()
+    pygame.mixer.fadeout(4000)
+    pygame.mixer.stop()
 
     return True
 
@@ -340,7 +380,9 @@ class ambiance():
       if oBackgroundConf.has_option('general', 'volume'):
         fVolume = oBackgroundConf.getfloat('general', 'volume', fallback=fDefaultVolume)
       
+      self.currentBackgroundVolume = fVolume
       iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
+      self.currentVolume = iVolume
       
       self.currentDeltaMin = oBackgroundConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
       self.currentDeltaMax = oBackgroundConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
@@ -352,6 +394,7 @@ class ambiance():
         oBackground = pygame.mixer.Sound(backgroundFile)
       
         self.debug('play background ' + backgroundFile + ' (volume:' + str(iVolume) + ')')
-      
+
+        self.currentBackground = oBackground
         oBackground.set_volume(iVolume)
         oBackground.play(-1)

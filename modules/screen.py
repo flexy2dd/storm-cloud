@@ -29,6 +29,7 @@ class screen():
     self.image = Image.new(self.device.mode, self.device.size)
     self.draw = ImageDraw.Draw(self.image)
 
+    self.remainingPos = self.device.width
     self.pulseStatus = 1
     self.pulsePos = 1
     self.fontSize = 10
@@ -80,52 +81,76 @@ class screen():
   def remainingTime(self):
 
     oAmbiance = ambiance.ambiance()
-    remainingtime = oAmbiance.getRemainingTime()
-    remainingtime = datetime.datetime.strptime(remainingtime, '%Y-%m-%d %H:%M:%S')
-    
-    nowTime = datetime.datetime.now().replace(microsecond=0) 
-    diffTime = remainingtime - nowTime
+    remainingtime = oAmbiance.getRemainingSeconds()
    
-    d = diffTime.days  # days
-    h = divmod(diffTime.seconds, 3600)  # hours
-    m = divmod(h[1], 60)  # minutes
-    s = m[1] # seconds
+    if remainingtime>0:
+      h = divmod(remainingtime, 3600)  # hours
+      m = divmod(h[1], 60)  # minutes
 
-    hours = h[0] 
-    if d>0:
-      hours += d*24
-    
-    minutes = m[0]
+      print(str(remainingtime) + ' - ' + str(h) + ':' + str(m))
 
-    second = 0      
-    if int(m[0])==0 and int(hours)==0 and int(s)>0:
-      seconds = s
+      hours = math.trunc(h[0])
+      minutes = math.trunc(m[0])
+     
+    else:
+      hours = 0
+      minutes = 0
 
     font = ImageFont.truetype('%s/../fonts/digital-7mono.ttf' % os.path.dirname(__file__), 55)
-    
+
+    print(str(hours) + ':' + str(minutes))
+
     self.draw.text((0, 5), '{:0>2}'.format(hours) , font=font, fill=1)
     self.draw.text((65, 5), '{:0>2}'.format(minutes) , font=font, fill=1)
     self.draw.text((46, 5), ':' , font=font, fill=1)
 
   def pulse(self):
 
+    # pulse indicator
     step = 4
 
-    if self.pulseStatus == 1:
-      self.pulsePos = self.pulsePos + step
-    else:
-      self.pulsePos = self.pulsePos - step
+#    if self.pulseStatus == 1:
+#      self.pulsePos = self.pulsePos + step
+#    else:
+#      self.pulsePos = self.pulsePos - step
+#
+#    if self.pulsePos < 0:
+#      self.pulsePos = self.pulsePos + (step * 2)
+#      self.pulseStatus = 1
 
-    if self.pulsePos < 0:
-      self.pulsePos = self.pulsePos + (step * 2)
-      self.pulseStatus = 1
+#    if self.pulsePos > self.device.width:
+#      self.pulsePos = self.pulsePos - (step * 2)
+#      self.pulseStatus = 0
 
-    if self.pulsePos > self.device.width:
-      self.pulsePos = self.pulsePos - (step * 2)
-      self.pulseStatus = 0
+    self.pulsePos = self.pulsePos + 1
 
     self.draw.rectangle((0, self.device.height-1, self.device.width, self.device.height-1), outline="black", fill="black")
-    self.draw.rectangle((self.pulsePos, self.device.height-1, self.pulsePos, self.device.height-1), outline="white", fill="white")
+    if self.pulsePos > 2:
+      self.pulsePos = 0
+      self.draw.rectangle((1, self.device.height-1, 1, self.device.height-1), outline="white", fill="white")
+    
+    oAmbiance = ambiance.ambiance()
+
+    # remaining indicator
+    remainingtimeSeconds = oAmbiance.getRemainingSeconds()
+    if remainingtimeSeconds>0:
+      self.remainingPos = (self.device.width / (oAmbiance.getSnooze() * 60)) * remainingtimeSeconds
+      self.draw.rectangle((0, self.device.height-2, self.device.width, self.device.height-2), outline="black", fill="black")
+      self.draw.rectangle((self.remainingPos, self.device.height-2, self.remainingPos, self.device.height-2), outline="white", fill="white")
+    else:
+      self.draw.rectangle((0, self.device.height-2, self.device.width, self.device.height-2), outline="black", fill="black")
+
+    # storm indicator
+    stormDelta = oAmbiance.getEventDelta()
+    stormPos = oAmbiance.getEventPos()
+
+    if stormPos>0 and stormDelta>0 and remainingtimeSeconds>0:
+      stormPos = (self.device.width / stormDelta) * stormPos
+      self.draw.rectangle((0, self.device.height-3, self.device.width, self.device.height-3), outline="black", fill="black")
+      self.draw.rectangle((stormPos, self.device.height-3, stormPos, self.device.height-3), outline="white", fill="white")
+    else:
+      self.draw.rectangle((0, self.device.height-3, self.device.width, self.device.height-3), outline="black", fill="black")
+
     self.display()
     
   def sleep(self, secondsWait = 5.0):

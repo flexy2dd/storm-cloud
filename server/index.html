@@ -345,28 +345,28 @@
 
       socket.emit("get_volume");
       socket.on("update_volume", (data) => {
-        $('#panel-volume-current').attr("data-volume", data.volume);
+        $('#panel-volume-current').data("volume", data.volume);
         $("#panel-volume-current").text(data.volume);
       });
       $("#btn-remove-volume").on("click", function(event) {
         var volume = $("#panel-volume-current").data('volume');
 
-        volume = volume - 1;
+        volume = parseInt(volume) - 1;
         if (volume<0)
           volume = 0;
 
-        $('#panel-volume-current').attr("data-volume", volume);
+        $('#panel-volume-current').data("volume", volume);
         $("#panel-volume-current").text(volume);
         socket.emit("set_volume", volume);
       });
       $("#btn-add-volume").on("click", function(event) {
         var volume = $("#panel-volume-current").data('volume');
 
-        volume = volume + 1;
+        volume = parseInt(volume) + 1;
         if (volume>100)
           volume = 100;
 
-        $('#panel-volume-current').attr("data-volume", volume);
+        $('#panel-volume-current').data("volume", volume);
         $("#panel-volume-current").text(volume);
         socket.emit("set_volume", volume);
       });

@@ -23,6 +23,7 @@ from dateutil.parser import *
 
 from modules import ambiance
 from modules import constant
+from modules import screen
 from modules import thunderlight
 
 pool = concurrent.futures.ThreadPoolExecutor()
@@ -32,7 +33,7 @@ async def strike(oThunderlight, delayTime, delayFactor, strikeFactor, brightFact
  
 if __name__ == "__main__":
 
-  parser = argparse.ArgumentParser(description="Alarm-clock Ambiance service")
+  parser = argparse.ArgumentParser(description="Storm-cloud Ambiance service")
   parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
   parser.add_argument("-V", "--volume", help="volume (0 > 100)", type=int)
   parser.add_argument("-s", "--start", help="start mode", action='store_true')
@@ -74,6 +75,7 @@ if __name__ == "__main__":
 
         eventCurrent = None
         eventDelta = random.randint(oAmbiance.currentDeltaMin, oAmbiance.currentDeltaMax)
+        oAmbiance.setEventDelta(eventDelta)
 
         if args.verbose: print('wait ' + str(eventDelta) + ' seconds for next event')
 
@@ -104,9 +106,23 @@ if __name__ == "__main__":
           eventCurrent=None
           if eventDelta<=0:
             eventDelta = random.randint(oAmbiance.currentDeltaMin, oAmbiance.currentDeltaMax)
+            oAmbiance.setEventDelta(eventDelta)
             if args.verbose: print('wait ' + str(eventDelta) + ' seconds for next event')
           else:
+            oAmbiance.setEventPos(eventDelta)
             eventDelta -= 1
+
+        iAmbianceVolume = oAmbiance.getVolume()
+        print(iAmbianceVolume)
+        print(oAmbiance.currentBackgroundVolume)
+        print(oAmbiance.currentVolume)
+        #print(iVolume)
+        if oAmbiance.currentVolume != iAmbianceVolume:
+          if oAmbiance.currentBackground != None:
+            iVolume = ((iAmbianceVolume * oAmbiance.currentBackgroundVolume) / 100) / 100
+            if args.verbose: print('change volume to ' + str(iAmbianceVolume))
+            oAmbiance.currentVolume = iAmbianceVolume
+            oAmbiance.currentBackground.set_volume(iVolume)
 
     else:
       if args.verbose: print('remaining is over')

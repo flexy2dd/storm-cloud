@@ -1,6 +1,7 @@
 import sys
 import os
 import re
+import getopt
 import signal
 import argparse
 import time
@@ -14,6 +15,10 @@ import socketio
 from aiohttp import web
 from modules import constant
 from modules import ambiance
+
+parser = argparse.ArgumentParser(description="Storm-cloud server service")
+parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
+args = parser.parse_args()
 
 #sio = socketio.AsyncServer(logger=True, engineio_logger=True)
 sio = socketio.AsyncServer()
@@ -110,10 +115,12 @@ async def set_light(sid, data):
 async def get_volume(sid):
   oAmbiance = ambiance.ambiance()
   volume = oAmbiance.getVolume()
+  if args.verbose: print('get volume ' + str(volume))
   await sio.emit('update_volume', {'volume': str(volume)})
 
 @sio.event
 async def set_volume(sid, data):
+  if args.verbose: print('set volume ' + str(data))
   oAmbiance = ambiance.ambiance()
   oAmbiance.setVolume(data)
   await sio.emit('update_volume', {'volume': str(data)})

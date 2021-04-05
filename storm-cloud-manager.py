@@ -67,8 +67,11 @@ swithRelease = 0
 # ===========================================================================
 
 swithRelease = 0
+swithRotate = 0
 
 def rotaryRotateCall(direction):
+  global swithRotate
+  swithRotate = 1
   print('Rotate to ' + direction)
 
 def rotarySwitchCall(switchStatus):
@@ -88,16 +91,16 @@ while(True):
   try:
 
     if screenStatus==0:
-      if swithRelease==1:
+      if swithRelease==1 or swithRotate == 1:
         screenStatus = 1
         swithRelease = 0
+        swithRotate = 0
         oScreen.cls()
         oScreen.remainingTime()
         affStart = time.time()
         secondsWait = constant.MENU_WAIT_SECONDS
         waitStep = oScreen.width / (float(secondsWait) * 1000)
         oScreen.draw.rectangle((0, oScreen.height-1, oScreen.width, oScreen.height-1), 0, 1)
-        
       else:
         oScreen.pulse()
 
