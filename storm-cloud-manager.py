@@ -9,6 +9,7 @@ import configparser
 import pprint
 import datetime
 import RPi.GPIO as GPIO
+import logging
 
 from PIL import ImageFont, ImageDraw, Image
 from luma.core.render import canvas
@@ -51,11 +52,34 @@ menu_data = {
   ]
 }
 
+parser = argparse.ArgumentParser(description="Storm-cloud Ambiance service")
+parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
+parser.add_argument("-l", "--log", help="Log level")
+args = parser.parse_args()
+
+# ===========================================================================
+# Logging
+# ===========================================================================
+logLevel = getattr(logging, 'ERROR', None)
+if args.log:
+  logLevel = getattr(logging, args.log.upper(), None)
+
+if os.path.isfile(constant.AMBIANCE_CONF):
+  confFile = configparser.ConfigParser()
+  confFile.read(constant.AMBIANCE_CONF)
+
+  if confFile.has_option('general', 'debug'):
+    logLevel = confFile.get('general', 'debug')
+    logLevel = getattr(logging, logLevel.upper(), None)
+
+logging.basicConfig(filename='/var/log/storm-cloud-manager.log', level=logLevel)
+
 # ===========================================================================
 # Screen
 # ===========================================================================
 oScreen = screen.screen()
 oScreen.cls()
+oScreen.logger = logging
 oScreen.debug('init clock')
 oScreen.debug("ip: %s" % network.get_lan_ip())
 oScreen.sleep(0.5)
@@ -83,6 +107,7 @@ oRotary = rotary.rotary(
   switch_callback=rotarySwitchCall,
   rotate_callback=rotaryRotateCall
 )
+oRotary.logger = logging
 
 screenStatus = 0
 
@@ -115,6 +140,7 @@ while(True):
           oRotary.triggerDisable()
           oScreen.cls()
           oMenu = menu.menu()
+          oMenu.logger = logging
           oMenu.processmenu(oScreen, oRotary, menu_data)
           oRotary.setSwitchCallback(rotarySwitchCall)
           oRotary.setRotateCallback(rotaryRotateCall)

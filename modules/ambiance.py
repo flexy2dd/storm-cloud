@@ -10,6 +10,9 @@ import RPi.GPIO as GPIO
 import glob
 import configparser
 import random
+import logging
+from inspect import getmembers
+from pprint import pprint
 from modules import constant
 from modules import screen
 from modules import thunderlight
@@ -23,6 +26,7 @@ from os.path import isfile, join
 class ambiance():
 
   def __init__(self):
+    self.logger = None
     self.ambianceConf = constant.AMBIANCE_CONF
     self.verbose = False
     self.currentDeltaMin = constant.AMBIANCE_DELTAMIN
@@ -31,14 +35,27 @@ class ambiance():
     self.currentThunderLevel = 0
     self.currentBackground = None
     self.currentBackgroundVolume = 0
+    self.currentBackgroundName = ''
     self.currentVolume = 0
     
     # init sound mixer
     pygame.mixer.pre_init(44100, -16, 2, 2048)
     pygame.mixer.init();
 
+  def log(self, level, message):
+    if self.logger != None:
+      if level.upper()=='DEBUG':
+        self.logger.debug(message)
+      elif level.upper()=='INFO':
+        self.logger.info(message)
+      elif level.upper()=='WARNING':
+        self.logger.warning(message)
+      elif level.upper()=='ERROR':
+        self.logger.error(message)
+
   def debug(self, message):
     if self.verbose:
+      self.log('DEBUG', message)
       print(message)
 
   def getFilePid(self):
@@ -66,18 +83,27 @@ class ambiance():
     nowTime = time.mktime(datetime.datetime.now().replace(microsecond=0).timetuple())
     targetTime = nowTime
 
-    if os.path.isfile(constant.AMBIANCE_PID):
-      f = open(constant.AMBIANCE_PID, "r")
+    if os.path.isfile(self.getFilePid()):
+      f = open(self.getFilePid(), "r")
       targetTime = f.read()
+
+    try:
+      fTargetTime = float(targetTime)
+    except:
+      self.debug('targetTime is not correct erase it')
+      if os.path.exists(self.getFilePid()):
+        os.remove(self.getFilePid())
+      return 0
 
     targetTime = datetime.datetime.fromtimestamp(float(targetTime)) 
     nowTime = datetime.datetime.fromtimestamp(float(nowTime))
-    
+
     if targetTime < nowTime:
+      self.debug('targetTime is over')
       return 0
 
     timeDelta = targetTime - nowTime
-
+    
     return timeDelta.total_seconds()
 
   def getRemainingTime(self, bIncludeSeconds = False):
@@ -90,7 +116,7 @@ class ambiance():
 
     if bIncludeSeconds:
       return "%02i:%02i:%02i" % (hours, minutes, seconds)
-      
+
     return "%02i:%02i" % (hours, minutes)
 
   def setRain(self, rain):
@@ -99,7 +125,7 @@ class ambiance():
       ambiance.read(self.ambianceConf)
 
       if int(rain) in [constant.RAIN_LEVEL_NONE, constant.RAIN_LEVEL_LIGHT, constant.RAIN_LEVEL_MODERATE, constant.RAIN_LEVEL_HEAVY]:
-        ambiance.set('general', 'rain', str(rain))
+        ambiance.set('rain', 'rain', str(rain))
 
         with open(self.ambianceConf, 'w') as configfile:
           ambiance.write(configfile)
@@ -110,7 +136,7 @@ class ambiance():
 
   def getRain(self):
     ambiance = self.getAmbiance()
-    return int(ambiance.get('general', 'rain', fallback=constant.RAIN_LEVEL_NONE))
+    return int(ambiance.get('rain', 'rain', fallback=constant.RAIN_LEVEL_NONE))
 
   def setThunder(self, thunderstorm):
     if os.path.isfile(self.ambianceConf):
@@ -118,7 +144,7 @@ class ambiance():
       ambiance.read(self.ambianceConf)
 
       if int(thunderstorm) in [constant.THUNDERSTORM_LEVEL_NONE, constant.THUNDERSTORM_LEVEL_LIGHT, constant.THUNDERSTORM_LEVEL_MODERATE, constant.THUNDERSTORM_LEVEL_HEAVY]:
-        ambiance.set('general', 'thunder', str(thunderstorm))
+        ambiance.set('thunder', 'thunder', str(thunderstorm))
 
         with open(self.ambianceConf, 'w') as configfile:
           ambiance.write(configfile)
@@ -129,7 +155,46 @@ class ambiance():
 
   def getThunder(self):
     ambiance = self.getAmbiance()
-    return int(ambiance.get('general', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
+    return int(ambiance.get('thunder', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
+
+  def setThunderVolume(self, volume):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      ambiance.set('thunder', 'volume', str(volume))
+      self.debug('set volume ' + str(volume))
+    
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
+
+      return True
+
+    return False;
+
+  def getThunderVolume(self):
+    ambiance=self.getAmbiance()
+    return int(ambiance.get('thunder', 'volume', fallback='80'))
+
+  def setThunderDeltas(self, thunderDeltas):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      ambiance.set('thunder', 'deltaMax', str(thunderDeltas['max']))
+      ambiance.set('thunder', 'deltaMin', str(thunderDeltas['min']))
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
+
+      return True
+
+    return False;
+
+  def getThunderDeltas(self):
+    ambiance=self.getAmbiance()
+    deltaMax = int(ambiance.get('thunder', 'deltaMax', fallback=str(constant.AMBIANCE_DELTAMAX)))
+    deltaMin = int(ambiance.get('thunder', 'deltaMin', fallback=str(constant.AMBIANCE_DELTAMIN)))
+    return {'max': deltaMax, 'min': deltaMin}
 
   def setLight(self, thunderlight):
     if os.path.isfile(self.ambianceConf):
@@ -137,7 +202,7 @@ class ambiance():
       ambiance.read(self.ambianceConf)
 
       if int(thunderlight) in [constant.THUNDERLIGHT_ON, constant.THUNDERLIGHT_OFF]:
-        ambiance.set('general', 'light', str(thunderlight))
+        ambiance.set('thunder', 'light', str(thunderlight))
 
         with open(self.ambianceConf, 'w') as configfile:
           ambiance.write(configfile)
@@ -148,7 +213,7 @@ class ambiance():
 
   def getLight(self):
     ambiance = self.getAmbiance()
-    return int(ambiance.get('general', 'light', fallback=constant.THUNDERLIGHT_ON))
+    return int(ambiance.get('thunder', 'light', fallback=constant.THUNDERLIGHT_ON))
 
   def setVolume(self, volume):
     if os.path.isfile(self.ambianceConf):
@@ -156,6 +221,7 @@ class ambiance():
       ambiance.read(self.ambianceConf)
 
       ambiance.set('general', 'volume', str(volume))
+      self.debug('set volume ' + str(volume))
     
       with open(self.ambianceConf, 'w') as configfile:
         ambiance.write(configfile)
@@ -174,7 +240,8 @@ class ambiance():
       ambiance.read(self.ambianceConf)
 
       ambiance.set('general', 'snooze', str(snooze))
-    
+      self.debug('set snooze ' + str(snooze))
+
       with open(self.ambianceConf, 'w') as configfile:
         ambiance.write(configfile)
 
@@ -184,6 +251,7 @@ class ambiance():
 
   def getSnooze(self):
     ambiance=self.getAmbiance()
+    self.debug('get snooze')
     return int(ambiance.get('general', 'snooze', fallback='30'))
 
   def setEventDelta(self, delta):
@@ -210,7 +278,7 @@ class ambiance():
       ambiance.read(self.ambianceConf)
 
       ambiance.set('event', 'pos', str(delta))
-    
+
       with open(self.ambianceConf, 'w') as configfile:
         ambiance.write(configfile)
 
@@ -223,53 +291,61 @@ class ambiance():
     return int(ambiance.get('event', 'pos', fallback='0'))
 
   def start(self):
+    self.debug('start')
     if os.path.exists(self.getFilePid()):
       os.remove(self.getFilePid())
-  
+      self.debug('start remove pid ' + self.getFilePid())
+
     iSnooze = self.getSnooze()
     unixTime = time.mktime(datetime.datetime.now().replace(microsecond=0).timetuple())
+    sSnooze = str(unixTime + (iSnooze * 60))
     f = open(self.getFilePid(), "w")
-    f.write(str(unixTime + (iSnooze * 60)))
+    f.write(sSnooze)
+    self.debug('start write pid ' + self.getFilePid() + ' : ' + sSnooze)
     f.close()
-    
+
     return True
-    
+
   def stop(self):
+    self.debug('stop')
+
     if os.path.exists(self.getFilePid()):
       os.remove(self.getFilePid())
+      self.debug('stop remove pid ' + self.getFilePid())
 
     pygame.mixer.fadeout(4000)
     pygame.mixer.stop()
 
     return True
 
-  def thunderToStr(self, iThunder):  
+  def thunderToStr(self, iThunder):
     switcher = {
         1: "light",
         2: "moderate",
         3: "heavy",
     }
     return switcher.get(iThunder, "none")
-    
+
   def loadEvents(self):
     oAmbianceConf = configparser.ConfigParser()
     oAmbianceConf.read(self.ambianceConf)
 
     eventsDict = {}
 
-    self.currentThunderLevel = int(oAmbianceConf.get('general', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
-    
+    self.currentThunderLevel = self.getThunder()
+    #int(oAmbianceConf.get('general', 'thunder', fallback=constant.THUNDERSTORM_LEVEL_NONE))
+
     if self.currentThunderLevel>0:
       iAmbianceVolume = int(oAmbianceConf.get('general', 'volume', fallback=50))
       oThunderlight = thunderlight.thunderlight()
-      
+
       # default values
       fDefaultVolume = 100.00
       iDefaultLightOffset = 0
       iDefaultLightDelay = int(oThunderlight.getDelayFactor())
       iDefaultLightStrike = int(oThunderlight.getStrikeFactor())
       iDefaultLightBright = int(oThunderlight.getBrightFactor())
-      
+
       oEventDefaultConf = configparser.ConfigParser()
       eventFileDefaultConf = 'sounds/thunder/thunder.conf'
       if os.path.isfile(eventFileDefaultConf):
@@ -279,15 +355,15 @@ class ambiance():
         iDefaultLightDelay = oEventDefaultConf.getint('light-' + str(self.currentThunderLevel), 'delay', fallback=iDefaultLightDelay)
         iDefaultLightStrike = oEventDefaultConf.getint('light-' + str(self.currentThunderLevel), 'force', fallback=iDefaultLightStrike)
         iDefaultLightBright = oEventDefaultConf.getint('light-' + str(self.currentThunderLevel), 'bright', fallback=iDefaultLightBright)
-      
+
       regexp = r".*/(thunder-" + self.thunderToStr(self.currentThunderLevel) + "-.*)\.(wav|mp3)"
       eventIndex = 0
       for file in glob.glob('sounds/thunder/*'):
         result = re.match(regexp, str(file))
         if result is not None:
-      
+
           self.debug('find event ' + file)
-      
+
           fileRoot = result.groups()[0]
           fileExt = result.groups()[1]
       
@@ -333,11 +409,31 @@ class ambiance():
     }
     return switcher.get(iRain, "none")
 
+  def setPlaying(self, thunderstorm):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      if int(thunderstorm) in [constant.THUNDERSTORM_LEVEL_NONE, constant.THUNDERSTORM_LEVEL_LIGHT, constant.THUNDERSTORM_LEVEL_MODERATE, constant.THUNDERSTORM_LEVEL_HEAVY]:
+        ambiance.set('thunder', 'thunder', str(thunderstorm))
+
+        with open(self.ambianceConf, 'w') as configfile:
+          ambiance.write(configfile)
+
+        return True
+
+    return False;
+
+  def getPlaying(self):
+    ambiance = self.getAmbiance()
+    return ambiance.get('play', 'background', fallback='')
+
   def playBackground(self):
     oAmbianceConf = configparser.ConfigParser()
     oAmbianceConf.read(self.ambianceConf)
 
-    self.currentRainLevel = int(oAmbianceConf.get('general', 'rain', fallback=constant.RAIN_LEVEL_NONE))
+    self.currentRainLevel = self.getRain()
+    #int(oAmbianceConf.get('rain', 'rain', fallback=constant.RAIN_LEVEL_NONE))
     
     if self.currentRainLevel>0:
 
@@ -384,8 +480,12 @@ class ambiance():
       iVolume = ((iAmbianceVolume * fVolume) / 100) / 100
       self.currentVolume = iVolume
       
-      self.currentDeltaMin = oBackgroundConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
-      self.currentDeltaMax = oBackgroundConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
+      deltas = self.getThunderDeltas()
+      self.currentDeltaMin = deltas['min']
+      self.currentDeltaMax = deltas['max']
+             
+#      self.currentDeltaMin = oBackgroundConf.getint('general', 'deltaMin', fallback=iDefaultDeltaMin)
+#      self.currentDeltaMax = oBackgroundConf.getint('general', 'deltaMax', fallback=iDefaultDeltaMax)
       
       backgroundFile = '%s/../sounds/rain/%s.%s' % (os.path.dirname(__file__), rainFile['root'], rainFile['ext'])
       self.debug('load background ' + backgroundFile)
@@ -395,6 +495,7 @@ class ambiance():
       
         self.debug('play background ' + backgroundFile + ' (volume:' + str(iVolume) + ')')
 
+        self.currentBackgroundName = backgroundFile
         self.currentBackground = oBackground
         oBackground.set_volume(iVolume)
         oBackground.play(-1)

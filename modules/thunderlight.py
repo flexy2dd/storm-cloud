@@ -5,6 +5,7 @@ import string
 import datetime
 import random
 import pprint
+import logging
 from modules import constant
 import configparser
 from rpi_ws281x import *
@@ -16,6 +17,7 @@ from rpi_ws281x import *
 class thunderlight():
 
   def __init__(self):
+    self.logger = None
     self.strip = Adafruit_NeoPixel(
       constant.THUNDERLIGHT_LED_COUNT, 
       constant.THUNDERLIGHT_LED_PIN, 
@@ -72,6 +74,17 @@ class thunderlight():
        1
     ]
     self.numYValues = len(self.yValues)
+
+  def log(self, level, message):
+    if self.logger != None:
+      if level.upper()=='DEBUG':
+        self.logger.debug(message)
+      elif level.upper()=='INFO':
+        self.logger.info(message)
+      elif level.upper()=='WARNING':
+        self.logger.warning(message)
+      elif level.upper()=='ERROR':
+        self.logger.error(message)
 
   def Exit(self):
     self.turnAllOff()

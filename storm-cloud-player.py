@@ -15,6 +15,7 @@ import datetime
 import threading
 import asyncio
 import concurrent.futures
+import logging
 
 from dateutil.relativedelta import *
 from dateutil.easter import *
@@ -36,11 +37,31 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="Storm-cloud Ambiance service")
   parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
   parser.add_argument("-V", "--volume", help="volume (0 > 100)", type=int)
+  parser.add_argument("-l", "--log", help="Log level")
   parser.add_argument("-s", "--start", help="start mode", action='store_true')
 
   args = parser.parse_args()
 
+  # ===========================================================================
+  # Logging
+  # ===========================================================================
+  logLevel = getattr(logging, 'ERROR', None)
+  if args.log:
+    logLevel = getattr(logging, args.log.upper(), None)
+  
+  if os.path.isfile(constant.AMBIANCE_CONF):
+    confFile = configparser.ConfigParser()
+    confFile.read(constant.AMBIANCE_CONF)
+  
+    if confFile.has_option('general', 'debug'):
+      logLevel = confFile.get('general', 'debug')
+      logLevel = getattr(logging, logLevel.upper(), None)
+  
+  logging.basicConfig(filename='/var/log/storm-cloud-player.log', level=logLevel)
+
   oAmbiance = ambiance.ambiance()
+  oAmbiance.logger = logging
+
   if args.verbose:
     oAmbiance.verbose = True
 
@@ -52,6 +73,7 @@ if __name__ == "__main__":
   isRunning = False
 
   oThunderlight = thunderlight.thunderlight()
+  oThunderlight.logger = logging
   if args.verbose:
     oThunderlight.verbose = True
 
@@ -87,6 +109,7 @@ if __name__ == "__main__":
         
           eventDuration = eventsList[eventIndex]['duration']
           oEvent = eventsList[eventIndex]['oEvent']
+          sEventFile = eventsList[eventIndex]['file']
 
           delayTime = eventsList[eventIndex]['lightDelay'] / 1000
           lightDelay = eventsList[eventIndex]['lightDelay']
@@ -94,6 +117,11 @@ if __name__ == "__main__":
           lightBright = eventsList[eventIndex]['lightBright']
     
           pool.submit(asyncio.run, strike(oThunderlight, delayTime=delayTime, delayFactor=lightDelay, strikeFactor=lightStrike, brightFactor=lightBright))
+
+          thunderVolume = float(oAmbiance.getThunderVolume())
+          iVolume = ((iAmbianceVolume * thunderVolume) / 100) / 100
+          if (iVolume>0):
+            oEvent.set_volume(iVolume)
 
           eventCurrent=oEvent.play()
 
@@ -105,6 +133,10 @@ if __name__ == "__main__":
         else:
           eventCurrent=None
           if eventDelta<=0:
+            
+            deltas = oAmbiance.getThunderDeltas()
+            oAmbiance.currentDeltaMin = deltas['min']
+            oAmbiance.currentDeltaMax = deltas['max']
             eventDelta = random.randint(oAmbiance.currentDeltaMin, oAmbiance.currentDeltaMax)
             oAmbiance.setEventDelta(eventDelta)
             if args.verbose: print('wait ' + str(eventDelta) + ' seconds for next event')
@@ -113,10 +145,6 @@ if __name__ == "__main__":
             eventDelta -= 1
 
         iAmbianceVolume = oAmbiance.getVolume()
-        print(iAmbianceVolume)
-        print(oAmbiance.currentBackgroundVolume)
-        print(oAmbiance.currentVolume)
-        #print(iVolume)
         if oAmbiance.currentVolume != iAmbianceVolume:
           if oAmbiance.currentBackground != None:
             iVolume = ((iAmbianceVolume * oAmbiance.currentBackgroundVolume) / 100) / 100

@@ -4,6 +4,7 @@ import codecs
 import time
 import math
 import pprint
+import logging
 
 from luma.core.interface.serial import i2c, spi, pcf8574
 from luma.core.interface.parallel import bitbang_6800
@@ -22,6 +23,7 @@ from modules import ambiance
 class screen():
   
   def __init__(self):
+    self.logger = None
     i2cbus = i2c()
     self.device = ssd1306(i2cbus)
     self.device.show()
@@ -50,6 +52,17 @@ class screen():
     self.logoWifi25  = Image.open('%s/../icons/wifi-25.png' % os.path.dirname(__file__))
     self.logoWifi0   = Image.open('%s/../icons/wifi-0.png' % os.path.dirname(__file__))
     
+  def log(self, level, message):
+    if self.logger != None:
+      if level.upper()=='DEBUG':
+        self.logger.debug(message)
+      elif level.upper()=='INFO':
+        self.logger.info(message)
+      elif level.upper()=='WARNING':
+        self.logger.warning(message)
+      elif level.upper()=='ERROR':
+        self.logger.error(message)
+
   def display(self):
     self.device.display(self.image)
     
@@ -81,6 +94,7 @@ class screen():
   def remainingTime(self):
 
     oAmbiance = ambiance.ambiance()
+    oAmbiance.logger = self.logger
     remainingtime = oAmbiance.getRemainingSeconds()
    
     if remainingtime>0:
@@ -130,6 +144,7 @@ class screen():
       self.draw.rectangle((1, self.device.height-1, 1, self.device.height-1), outline="white", fill="white")
     
     oAmbiance = ambiance.ambiance()
+    oAmbiance.logger = self.logger
 
     # remaining indicator
     remainingtimeSeconds = oAmbiance.getRemainingSeconds()

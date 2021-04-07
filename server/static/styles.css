@@ -1,0 +1,18 @@
+html, body {
+  font-family: 'Roboto', 'Helvetica', sans-serif;
+}
+
+.android-drawer-separator {
+  height: 1px;
+  background-color: #dcdcdc;
+  margin: 8px 0;
+}
+
+.mdl-layout__drawer .mdl-navigation__link.mdl-navigation__link {
+  font-size: 14px;
+  color: #757575;
+}
+
+.mdl-layout__drawer span.mdl-navigation__link.mdl-navigation__link {
+  color: #8bc34a;
+}

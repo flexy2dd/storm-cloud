@@ -1,6 +1,7 @@
 import RPi.GPIO as GPIO
 import time
 import math
+import logging
 from pprint import pprint
 from modules import constant
 
@@ -8,6 +9,7 @@ from modules import constant
 class rotary():
   
   def __init__(self, **params):
+    self.logger = None
     
     self.SWPrev = 1
     self.last_delta = 0
@@ -47,6 +49,17 @@ class rotary():
 
     if 'rotate_callback' in params:
       self.rotateCallback = params['rotate_callback']
+
+  def log(self, level, message):
+    if self.logger != None:
+      if level.upper()=='DEBUG':
+        self.logger.debug(message)
+      elif level.upper()=='INFO':
+        self.logger.info(message)
+      elif level.upper()=='WARNING':
+        self.logger.warning(message)
+      elif level.upper()=='ERROR':
+        self.logger.error(message)
 
   def triggerDisable(self):
     self.trigger = False

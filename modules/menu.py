@@ -3,6 +3,7 @@ import time
 import math
 import os
 import pygame
+import logging
 from PIL import ImageFont, ImageDraw, Image
 from modules import constant
 from modules import network
@@ -12,9 +13,21 @@ from pprint import pprint
 class menu():
 
   def __init__(self):
+    self.logger = None
     self.swithRelease = 0
     self.genericOptionStep = 1
-  
+
+  def log(self, level, message):
+    if self.logger != None:
+      if level.upper()=='DEBUG':
+        self.logger.debug(message)
+      elif level.upper()=='INFO':
+        self.logger.info(message)
+      elif level.upper()=='WARNING':
+        self.logger.warning(message)
+      elif level.upper()=='ERROR':
+        self.logger.error(message)
+
   # This function displays the appropriate menu and returns the option selected
   def runmenu(self, screen, rotary, menu, parent):
   
