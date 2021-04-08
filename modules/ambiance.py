@@ -138,6 +138,36 @@ class ambiance():
     ambiance = self.getAmbiance()
     return int(ambiance.get('rain', 'rain', fallback=constant.RAIN_LEVEL_NONE))
 
+  def setRainSelect(self, iRain, rainSelect):
+    if os.path.isfile(self.ambianceConf):
+      ambiance = configparser.ConfigParser()
+      ambiance.read(self.ambianceConf)
+
+      ambiance.set('rain', 'selected-' + str(iRain), str(rainSelect))
+
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
+
+      return True
+
+    return False;
+
+  def getRainSelected(self, iRain):
+    ambiance = self.getAmbiance()
+    return ambiance.get('rain', 'selected-' + str(iRain), fallback='random')
+
+  def getRainList(self, iRain):
+    rainSelected = self.getRainSelected(iRain)
+    regexp = r".*/(rain-" + self.rainToStr(iRain) + "-.*)\.(wav|mp3)"
+    rainFiles = []
+    rainFiles.append({'selected': rainSelected=='random', 'file': 'random', 'root': 'random', 'ext': 'wav'})
+    for file in glob.glob('sounds/rain/*'):
+      result = re.match(regexp, str(file))
+      if result is not None:
+        rainFiles.append({'selected': rainSelected==result.groups()[0], 'file': file, 'root': result.groups()[0], 'ext': result.groups()[1]})
+
+    return rainFiles
+
   def setThunder(self, thunderstorm):
     if os.path.isfile(self.ambianceConf):
       ambiance = configparser.ConfigParser()
@@ -459,13 +489,23 @@ class ambiance():
       
       if len(rainFiles) <= 0:
         return False
-      
+
       iIdx = 0
-      if len(rainFiles) > 1:
-        iIdx = random.randrange(0, len(rainFiles)-1)
-      
+
+      self.currentRainSelected = self.getRainSelected(self.currentRainLevel)
+      if self.currentRainSelected!='random':
+        for iIdx, item in enumerate(rainFiles):
+          print(item)
+          print(iIdx)
+          if item['root'] == self.currentRainSelected:
+            break
+
+      if iIdx<=0:
+        if len(rainFiles) > 1:
+          iIdx = random.randrange(0, len(rainFiles)-1)
+
       rainFile = rainFiles[iIdx]
-      
+
       oBackgroundConf = configparser.ConfigParser()
       
       backgroundFileConf = 'sounds/rain/' + rainFile['root'] + '.conf'

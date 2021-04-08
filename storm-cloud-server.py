@@ -12,6 +12,7 @@ import logging
 import logging.handlers
 import RPi.GPIO as GPIO
 import socketio
+import json
 from aiohttp import web
 from modules import constant
 from modules import ambiance
@@ -227,7 +228,26 @@ async def set_volume(sid, data):
   oAmbiance.setVolume(data)
   await sio.emit('update_volume', {'volume': str(data)})
 
+@sio.event
+async def set_rain_select(sid, rain, rainSelect):
+  if args.verbose: print('set rain select ' + str(rain) + ' ' + str(rainSelect))
+  oAmbiance = ambiance.ambiance()
+  if args.verbose: oAmbiance.verbose = True
+  oAmbiance.logger = logging
+  oAmbiance.setRainSelect(rain, rainSelect)
+  await sio.emit('update_rain_select', {'rain': str(rain), 'rainSelect': str(rainSelect)})
+
+async def get_rain_list(request):
+  rainLevel = int(request.query['rain'])
+  if args.verbose: print('get rain select ' + str(rainLevel))
+  oAmbiance = ambiance.ambiance()
+  if args.verbose: oAmbiance.verbose = True
+  oAmbiance.logger = logging
+  rainSelect = oAmbiance.getRainList(rainLevel)
+  return web.Response(text=json.dumps(rainSelect), status=200)
+
 app.router.add_static('/static', 'server/static')
+app.router.add_get("/rest/rain/list", get_rain_list)
 app.router.add_get('/', index)
 
 if __name__ == '__main__':
