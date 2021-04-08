@@ -313,6 +313,7 @@ class ambiance():
       os.remove(self.getFilePid())
       self.debug('stop remove pid ' + self.getFilePid())
 
+    self.setPlaying('')
     pygame.mixer.fadeout(4000)
     pygame.mixer.stop()
 
@@ -409,18 +410,17 @@ class ambiance():
     }
     return switcher.get(iRain, "none")
 
-  def setPlaying(self, thunderstorm):
+  def setPlaying(self, background):
     if os.path.isfile(self.ambianceConf):
       ambiance = configparser.ConfigParser()
       ambiance.read(self.ambianceConf)
 
-      if int(thunderstorm) in [constant.THUNDERSTORM_LEVEL_NONE, constant.THUNDERSTORM_LEVEL_LIGHT, constant.THUNDERSTORM_LEVEL_MODERATE, constant.THUNDERSTORM_LEVEL_HEAVY]:
-        ambiance.set('thunder', 'thunder', str(thunderstorm))
+      ambiance.set('play', 'background', str(background))
 
-        with open(self.ambianceConf, 'w') as configfile:
-          ambiance.write(configfile)
+      with open(self.ambianceConf, 'w') as configfile:
+        ambiance.write(configfile)
 
-        return True
+      return True
 
     return False;
 
@@ -495,6 +495,7 @@ class ambiance():
       
         self.debug('play background ' + backgroundFile + ' (volume:' + str(iVolume) + ')')
 
+        self.setPlaying(rainFile['root'])
         self.currentBackgroundName = backgroundFile
         self.currentBackground = oBackground
         oBackground.set_volume(iVolume)

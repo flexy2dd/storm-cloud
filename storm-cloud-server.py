@@ -69,12 +69,12 @@ async def check_remaining(sid, data):
   await sio.emit('update_remaining', {'remainingSeconds': str(remainingSeconds)})
 
 @sio.event
-async def check_play(sid, data):
+async def check_playing(sid):
   oAmbiance = ambiance.ambiance()
   if args.verbose: oAmbiance.verbose = True
   oAmbiance.logger = logging
   playing = oAmbiance.getPlaying()
-  await sio.emit('update_playing', {'playing': str(remainingSeconds)})
+  await sio.emit('update_playing', {'playing': playing})
 
 ## SNOOZE
 @sio.event

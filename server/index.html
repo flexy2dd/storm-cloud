@@ -47,6 +47,8 @@
               <div class="mdl-card__supporting-text">
                 <h2 id="panel-remainging">00:00</h2>
               </div>
+              <div class="mdl-card__supporting-text" id="panel-playing">
+              </div>
               <div class="mdl-card__menu">
                 <button id="btn-stop-snooze" class="mdl-button mdl-button--icon mdl-js-button mdl-js-ripple-effect">
                   <i class="material-icons">alarm_off</i>
@@ -364,6 +366,7 @@
 
     function checkRemaining() {
       socket.emit("check_remaining", 0);
+      socket.emit("check_playing");
       setTimeout(function(){ 
           checkRemaining();
         }, 
@@ -419,6 +422,11 @@
         $('#panel-volume').show();
         $('#panel-snooze').hide();
         document.querySelector('.mdl-layout').MaterialLayout.toggleDrawer();
+      });
+
+      // update playing
+      socket.on("update_playing", (data) => {
+        $('#panel-playing').text(data.playing)
       });
 
       // update remaining
