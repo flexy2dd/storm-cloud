@@ -87,8 +87,6 @@ if __name__ == "__main__":
       if not oAmbiance.isRunning():
         if args.verbose: print('Is not running Start it! '  + oAmbiance.getRemainingTime())
 
-        iLight = oAmbiance.getLight()
-
         # init and play background if exist
         oAmbiance.playBackground()
 
@@ -115,8 +113,10 @@ if __name__ == "__main__":
           lightDelay = eventsList[eventIndex]['lightDelay']
           lightStrike = eventsList[eventIndex]['lightStrike']
           lightBright = eventsList[eventIndex]['lightBright']
-    
-          pool.submit(asyncio.run, strike(oThunderlight, delayTime=delayTime, delayFactor=lightDelay, strikeFactor=lightStrike, brightFactor=lightBright))
+
+          iLight = oAmbiance.getLight()
+          if iLight==constant.THUNDERLIGHT_ON:
+            pool.submit(asyncio.run, strike(oThunderlight, delayTime=delayTime, delayFactor=lightDelay, strikeFactor=lightStrike, brightFactor=lightBright))
 
           thunderVolume = float(oAmbiance.getThunderVolume())
           iVolume = ((iAmbianceVolume * thunderVolume) / 100) / 100
@@ -162,4 +162,4 @@ if __name__ == "__main__":
         oThunderlight.turnAllOff()
         oAmbiance.stop();
 
-    time.sleep(1.0)
+    time.sleep(0.5)

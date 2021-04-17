@@ -452,6 +452,14 @@
       return zeroPad(rhours, 2) + ':' + zeroPad(rminutes, 2);
     }
 
+    function secondsToMMSS(seconds) {
+      var minutes = (seconds / 60);
+      var rminutes = Math.floor(minutes);
+      var seconds = (minutes - rminutes) * 60;
+      var rseconds = Math.round(seconds);
+      return zeroPad(rminutes, 2) + ':' + zeroPad(rseconds, 2);
+    }
+
     $( document ).ready(function() {
 
       // snooze menu
@@ -507,7 +515,7 @@
       // snooze update
       socket.emit("get_snooze", 0);
       socket.on("update_snooze", (data) => {
-        $('#panel-snooze-current').attr("data-minutes", data.snooze);
+        $('#panel-snooze-current').data("minutes", data.snooze);
         $("#panel-snooze-current").text(minuteToHHMM(data.snooze));
       });
 
@@ -515,21 +523,21 @@
       $("#btn-remove-snooze").on("click", function(event) {
         var currentSnooze = $("#panel-snooze-current").data('minutes');
 
-        currentSnooze = currentSnooze - 15;
+        currentSnooze = parseInt(currentSnooze) - 15;
         if (currentSnooze<0)
           currentSnooze = 0;
 
-        $('#panel-snooze-current').attr("data-minutes", currentSnooze);
+        $('#panel-snooze-current').data("minutes", currentSnooze);
         $("#panel-snooze-current").text(minuteToHHMM(currentSnooze));
       });
       $("#btn-add-snooze").on("click", function(event) {
         var currentSnooze = $("#panel-snooze-current").data('minutes');
 
-        currentSnooze = currentSnooze + 15;
+        currentSnooze = parseInt(currentSnooze) + 15;
         if (currentSnooze>1440)
           currentSnooze = 1440;
 
-        $('#panel-snooze-current').attr("data-minutes", currentSnooze);
+        $('#panel-snooze-current').data("minutes", currentSnooze);
         $("#panel-snooze-current").text(minuteToHHMM(currentSnooze));
       });
 
@@ -612,8 +620,10 @@
       socket.on("update_thunder_deltas", (data) => {
         $('#panel-thunder-deltamin-current').data("deltamin", data.deltas.min);
         $('#panel-thunder-deltamax-current').data("deltamax", data.deltas.max);
-        $("#panel-thunder-deltamin-current").text('Min ' + data.deltas.min + 's');
-        $("#panel-thunder-deltamax-current").text('Max ' + data.deltas.max + 's');
+//        $("#panel-thunder-deltamin-current").text('Min ' + data.deltas.min + 's');
+//        $("#panel-thunder-deltamax-current").text('Max ' + data.deltas.max + 's');
+        $("#panel-thunder-deltamin-current").text('Min ' + secondsToMMSS(data.deltas.min) + 'm');
+        $("#panel-thunder-deltamax-current").text('Max ' + secondsToMMSS(data.deltas.max) + 'm');
       });
 
       // thunder deltas min
@@ -621,27 +631,29 @@
         var deltaMin = $("#panel-thunder-deltamin-current").data('deltamin');
         var deltaMax = $("#panel-thunder-deltamax-current").data('deltamax');
 
-        deltaMin = parseInt(deltaMin) - 1;
-        if (deltaMin<1)
-          deltaMin = 1;
+        deltaMin = parseInt(deltaMin) - 30;
+        if (deltaMin<30)
+          deltaMin = 30;
 
         $('#panel-thunder-deltamin-current').data("deltamin", deltaMin);
-        $("#panel-thunder-deltamin-current").text('Min ' + deltaMin + 's');
+//        $("#panel-thunder-deltamin-current").text('Min ' + deltaMin + 's');
+        $("#panel-thunder-deltamin-current").text('Min ' + secondsToMMSS(deltaMin) + 'm');
         socket.emit("set_thunder_deltas", {'min': deltaMin, 'max': deltaMax});
       });
       $("#btn-add-thunder-deltamin").on("click", function(event) {
         var deltaMin = $("#panel-thunder-deltamin-current").data('deltamin');
         var deltaMax = $("#panel-thunder-deltamax-current").data('deltamax');
 
-        deltaMin = parseInt(deltaMin) + 1;
-        if (deltaMin>100)
-          deltaMin = 100;
+        deltaMin = parseInt(deltaMin) + 30;
+        if (deltaMin>3600)
+          deltaMin = 3570;
 
         if (deltaMin>=deltaMax)
-          deltaMin = deltaMax - 1
+          deltaMin = deltaMax - 30
 
         $('#panel-thunder-deltamin-current').data("deltamin", deltaMin);
-        $("#panel-thunder-deltamin-current").text('Min ' + deltaMin + 's');
+//        $("#panel-thunder-deltamin-current").text('Min ' + deltaMin + 's');
+        $("#panel-thunder-deltamin-current").text('Min ' + secondsToMMSS(deltaMin) + 'm');
         socket.emit("set_thunder_deltas", {'min': deltaMin, 'max': deltaMax});
       });
       
@@ -650,27 +662,29 @@
         var deltaMin = $("#panel-thunder-deltamin-current").data('deltamin');
         var deltaMax = $("#panel-thunder-deltamax-current").data('deltamax');
 
-        deltaMax = parseInt(deltaMax) - 1;
+        deltaMax = parseInt(deltaMax) - 30;
         if (deltaMax<1)
           deltaMax = 1;
 
         if (deltaMax<=deltaMin)
-          deltaMax = deltaMin + 1
+          deltaMax = deltaMin + 30
 
         $('#panel-thunder-deltamax-current').data("deltamax", deltaMax);
-        $("#panel-thunder-deltamax-current").text('Max ' + deltaMax + 's');
+//        $("#panel-thunder-deltamax-current").text('Max ' + deltaMax + 's');
+        $("#panel-thunder-deltamax-current").text('Max ' + secondsToMMSS(deltaMax) + 'm');
         socket.emit("set_thunder_deltas", {'min': deltaMin, 'max': deltaMax});
       });
       $("#btn-add-thunder-deltamax").on("click", function(event) {
         var deltaMin = $("#panel-thunder-deltamin-current").data('deltamin');        
         var deltaMax = $("#panel-thunder-deltamax-current").data('deltamax');
 
-        deltaMax = parseInt(deltaMax) + 1;
-        if (deltaMax>100)
-          deltaMax = 100;
+        deltaMax = parseInt(deltaMax) + 30;
+        if (deltaMax>3600)
+          deltaMax = 3600;
 
         $('#panel-thunder-deltamax-current').data("deltamax", deltaMax);
-        $("#panel-thunder-deltamax-current").text('Max ' + deltaMax + 's');
+//        $("#panel-thunder-deltamax-current").text('Max ' + deltaMax + 's');
+        $("#panel-thunder-deltamax-current").text('Max ' + secondsToMMSS(deltaMax) + 'm');
         socket.emit("set_thunder_deltas", {'min': deltaMin, 'max': deltaMax});
       });
 
