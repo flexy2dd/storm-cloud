@@ -16,6 +16,7 @@ import json
 from aiohttp import web
 from modules import constant
 from modules import ambiance
+from modules import config
 
 parser = argparse.ArgumentParser(description="Storm-cloud server service")
 parser.add_argument("-v", "--verbose", help="verbose mode", action='store_true')
@@ -34,7 +35,7 @@ if args.log:
   logLevel = getattr(logging, args.log.upper(), None)
 
 if os.path.isfile(constant.AMBIANCE_CONF):
-  confFile = configparser.ConfigParser()
+  confFile = config.config()
   confFile.read(constant.AMBIANCE_CONF)
 
   if confFile.has_option('general', 'debug'):

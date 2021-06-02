@@ -14,6 +14,7 @@ import datetime
 from rpi_ws281x import *
 from modules import thunderlight
 from modules import constant
+from modules import config
 
 from dateutil.relativedelta import *
 from dateutil.easter import *

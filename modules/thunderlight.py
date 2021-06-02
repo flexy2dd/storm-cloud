@@ -7,6 +7,7 @@ import random
 import pprint
 import logging
 from modules import constant
+from modules import config
 import configparser
 from rpi_ws281x import *
 

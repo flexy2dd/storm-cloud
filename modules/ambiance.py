@@ -16,6 +16,7 @@ from pprint import pprint
 from modules import constant
 from modules import screen
 from modules import thunderlight
+from modules import config
 from os import listdir
 from os.path import isfile, join
 
@@ -66,7 +67,7 @@ class ambiance():
 
   def getAmbiance(self):
     if os.path.isfile(self.ambianceConf):
-      oAmbiance = configparser.ConfigParser()
+      oAmbiance = config.config()
       oAmbiance.read(self.ambianceConf)
   
       if oAmbiance.has_option('general', 'title'):
@@ -121,7 +122,7 @@ class ambiance():
 
   def setRain(self, rain):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       if int(rain) in [constant.RAIN_LEVEL_NONE, constant.RAIN_LEVEL_LIGHT, constant.RAIN_LEVEL_MODERATE, constant.RAIN_LEVEL_HEAVY]:
@@ -140,7 +141,7 @@ class ambiance():
 
   def setRainSelect(self, iRain, rainSelect):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('rain', 'selected-' + str(iRain), str(rainSelect))
@@ -170,7 +171,7 @@ class ambiance():
 
   def setThunder(self, thunderstorm):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       if int(thunderstorm) in [constant.THUNDERSTORM_LEVEL_NONE, constant.THUNDERSTORM_LEVEL_LIGHT, constant.THUNDERSTORM_LEVEL_MODERATE, constant.THUNDERSTORM_LEVEL_HEAVY]:
@@ -189,7 +190,7 @@ class ambiance():
 
   def setThunderVolume(self, volume):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('thunder', 'volume', str(volume))
@@ -208,7 +209,7 @@ class ambiance():
 
   def setThunderDeltas(self, thunderDeltas):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('thunder', 'deltaMax', str(thunderDeltas['max']))
@@ -228,7 +229,7 @@ class ambiance():
 
   def setLight(self, thunderlight):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       if int(thunderlight) in [constant.THUNDERLIGHT_ON, constant.THUNDERLIGHT_OFF]:
@@ -247,7 +248,7 @@ class ambiance():
 
   def setVolume(self, volume):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('general', 'volume', str(volume))
@@ -266,7 +267,7 @@ class ambiance():
 
   def setSnooze(self, snooze):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('general', 'snooze', str(snooze))
@@ -286,7 +287,7 @@ class ambiance():
 
   def setEventDelta(self, delta):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('event', 'delta', str(delta))
@@ -304,7 +305,7 @@ class ambiance():
 
   def setEventPos(self, delta):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('event', 'pos', str(delta))
@@ -358,7 +359,7 @@ class ambiance():
     return switcher.get(iThunder, "none")
 
   def loadEvents(self):
-    oAmbianceConf = configparser.ConfigParser()
+    oAmbianceConf = config.config()
     oAmbianceConf.read(self.ambianceConf)
 
     eventsDict = {}
@@ -377,7 +378,7 @@ class ambiance():
       iDefaultLightStrike = int(oThunderlight.getStrikeFactor())
       iDefaultLightBright = int(oThunderlight.getBrightFactor())
 
-      oEventDefaultConf = configparser.ConfigParser()
+      oEventDefaultConf = config.config()
       eventFileDefaultConf = 'sounds/thunder/thunder.conf'
       if os.path.isfile(eventFileDefaultConf):
         oEventDefaultConf.read(eventFileDefaultConf)
@@ -398,7 +399,7 @@ class ambiance():
           fileRoot = result.groups()[0]
           fileExt = result.groups()[1]
       
-          oEventConf = configparser.ConfigParser()
+          oEventConf = config.config()
       
           eventFileConf = 'sounds/thunder/' + fileRoot + '.conf'
           if os.path.isfile(eventFileConf):
@@ -442,7 +443,7 @@ class ambiance():
 
   def setPlaying(self, background):
     if os.path.isfile(self.ambianceConf):
-      ambiance = configparser.ConfigParser()
+      ambiance = config.config()
       ambiance.read(self.ambianceConf)
 
       ambiance.set('play', 'background', str(background))
@@ -459,7 +460,7 @@ class ambiance():
     return ambiance.get('play', 'background', fallback='')
 
   def playBackground(self):
-    oAmbianceConf = configparser.ConfigParser()
+    oAmbianceConf = config.config()
     oAmbianceConf.read(self.ambianceConf)
 
     self.currentRainLevel = self.getRain()
@@ -472,7 +473,7 @@ class ambiance():
       fDefaultVolume = 100.00
       iDefaultDeltaMin = constant.AMBIANCE_DELTAMIN
       iDefaultDeltaMax = constant.AMBIANCE_DELTAMAX
-      oDefaultConf = configparser.ConfigParser()
+      oDefaultConf = config.config()
       fileDefaultConf = 'sounds/rain/rain.conf'
       if os.path.isfile(fileDefaultConf):
         oDefaultConf.read(fileDefaultConf)
@@ -506,7 +507,7 @@ class ambiance():
 
       rainFile = rainFiles[iIdx]
 
-      oBackgroundConf = configparser.ConfigParser()
+      oBackgroundConf = config.config()
       
       backgroundFileConf = 'sounds/rain/' + rainFile['root'] + '.conf'
       if os.path.isfile(backgroundFileConf):

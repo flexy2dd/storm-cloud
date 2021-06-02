@@ -15,6 +15,7 @@ from PIL import ImageFont, ImageDraw, Image
 
 from modules import constant
 from modules import ambiance
+from modules import config
 
 # ===========================================================================
 # screen Class

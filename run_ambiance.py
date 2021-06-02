@@ -66,7 +66,7 @@ def main(argv):
   debug('Volume:' + str(ambianceVolume))
 
   pidFile = ambiancePid
-  pid = configparser.ConfigParser()
+  pid = config.config()
   pid.add_section('general')
   pid['general']['duration'] = str(ambianceDuration)
   pid['general']['limit'] = str(unixTime)
@@ -84,7 +84,7 @@ def getAmbiance(name):
   debug('Ambiance ' + name + ' (' + ambianceFile + ')')
 
   if os.path.isfile(ambianceFile):
-    ambiance = configparser.ConfigParser()
+    ambiance = config.config()
     ambiance.read(ambianceFile)
 
     if ambiance.has_option('general', 'deltaMin'):
@@ -183,7 +183,7 @@ if __name__ == "__main__":
   if not os.path.isfile('ambience.pid'):
     debug('wait ' + str(eventDelta) + ' seconds for next event')
 
-  oAmbiencePid = configparser.ConfigParser()
+  oAmbiencePid = config.config()
 
   while True:
 

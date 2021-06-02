@@ -8,6 +8,7 @@ from PIL import ImageFont, ImageDraw, Image
 from modules import constant
 from modules import network
 from modules import ambiance
+from modules import config
 from pprint import pprint
 
 class menu():

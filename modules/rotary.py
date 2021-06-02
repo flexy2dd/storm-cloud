@@ -4,6 +4,7 @@ import math
 import logging
 from pprint import pprint
 from modules import constant
+from modules import config
 
 # Inspired by https://github.com/petervflocke/rotaryencoder_rpi
 class rotary():

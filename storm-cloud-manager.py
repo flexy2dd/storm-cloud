@@ -20,6 +20,7 @@ from modules import screen
 from modules import rotary
 from modules import constant
 from modules import ambiance
+from modules import config
 
 # ===========================================================================
 # Menu definition
@@ -65,7 +66,7 @@ if args.log:
   logLevel = getattr(logging, args.log.upper(), None)
 
 if os.path.isfile(constant.AMBIANCE_CONF):
-  confFile = configparser.ConfigParser()
+  confFile = config.config()
   confFile.read(constant.AMBIANCE_CONF)
 
   if confFile.has_option('general', 'debug'):
